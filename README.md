@@ -28,20 +28,20 @@ This platform is built with:
 
 ### Authentication & Security
 
-* Email/password auth via Better Auth
-* OAuth (Google, GitHub)
-* Email verification
-* Reset passwords
-* 2FA support
-* Session management with Arcjet protection
+* Email/password auth via Better Auth (Implemented)
+* OAuth (Google, GitHub) (Implemented)
+* Email verification (Implemented)
+* Reset passwords (Implemented)
+* 2FA support (Pending)
+* Session management with Arcjet protection (Implemented)
 
 ### Billing & Monetization
 
-* Stripe Checkout & Billing portal
-* Subscription tiers
-* Coupons & discounts
-* Referral system with reward credits
-* Affiliate tracking with payout logic
+* Stripe Checkout & Billing portal (Implemented)
+* Subscription tiers (Implemented)
+* Coupons & discounts (In Progress)
+* Referral system with reward credits (In Progress)
+* Affiliate tracking with payout logic (Pending)
 
 ### File Management
 
@@ -94,7 +94,7 @@ This launches:
 ### 3. Install dependencies
 
 ```bash
-npm install
+pnpm install
 ```
 
 ### 4. Configure environment variables
@@ -115,7 +115,7 @@ OPENAI_API_KEY=xxx
 ### 5. Apply database migrations
 
 ```bash
-npx prisma migrate dev
+pnpm db:migrate
 ```
 
 ### 6. Run the development server
@@ -161,24 +161,24 @@ scripts/
 
 ### Unit Tests
 
+Unit tests are planned using **Vitest** for utilities and core logic.
+```bash
+pnpm test
 ```
-npm run test
-```
-
-Uses **Vitest** for utilities and core logic.
+(Implementation pending)
 
 ### E2E Tests
 
-```
-npm run test:e2e
-```
-
-Uses **Playwright** for:
+E2E tests are planned using **Playwright** for:
 
 * Auth flow
 * Billing flow
 * AI endpoints
 * Resume builder actions
+```bash
+pnpm test:e2e
+```
+(Implementation pending)
 
 ---
 
@@ -237,7 +237,8 @@ app/(marketing)/privacy
 
 ## 📝 License
 
-This project is licensed under MIT.
+This project is released under a **Proprietary License**.
+Refer to the `LICENSE.md` file for full details.
 
 ---
 

@@ -1,0 +1,348 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "@prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id               String         @id
+  name             String
+  email            String
+  emailVerified    Boolean        @default(false)
+  isAdmin          Boolean        @default(false)
+  image            String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  sessions         Session[]
+  accounts         Account[]
+  authProviders    AuthProvider[]
+  subscription     Subscription?
+  resumes          Resume[]
+  aiUsages         AIUsage[]
+  activityLogs     ActivityLog[]
+  uploadFiles      UploadFile[]
+  arcjetEvents     ArcjetEvent[]
+  stripeCustomerId String?        @unique
+
+  // Fixed Referral Relations
+  referralsGiven    Referral[] @relation("ReferrerUser")
+  referralsReceived Referral[] @relation("ReferredUser")
+
+  teamMemberships TeamMember[]
+  couponsUsed     CouponUsage[]
+
+  @@unique([email])
+  @@index([email])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+model AuthProvider {
+  id         String @id @default(cuid())
+  userId     String
+  provider   String
+  providerId String
+  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerId])
+  @@index([userId])
+}
+
+model Subscription {
+  id                   String           @id @default(cuid())
+  userId               String           @unique
+  billingPlanId        String
+  stripeSubscriptionId String?          @unique
+  status               String
+  currentPeriodEnd     DateTime
+  cancelAtPeriodEnd    Boolean          @default(false)
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+  user                 User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  billingPlan          BillingPlan      @relation(fields: [billingPlanId], references: [id])
+  paymentHistories     PaymentHistory[]
+
+  @@index([userId])
+  @@index([stripeSubscriptionId])
+}
+
+model BillingPlan {
+  id            String         @id @default(cuid())
+  name          String         @unique
+  stripePriceId String?        @unique
+  priceCents    Int
+  interval      String
+  aiCredits     Int
+  features      Json
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  subscriptions Subscription[]
+
+  @@index([name])
+}
+
+model PaymentHistory {
+  id              String       @id @default(cuid())
+  subscriptionId  String
+  stripeInvoiceId String?      @unique
+  amountCents     Int
+  currency        String
+  status          String
+  createdAt       DateTime     @default(now())
+  subscription    Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([subscriptionId])
+  @@index([stripeInvoiceId])
+}
+
+model AIUsage {
+  id          String   @id @default(cuid())
+  userId      String
+  action      String
+  creditsUsed Int
+  metadata    Json?
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model Resume {
+  id           String          @id @default(cuid())
+  userId       String
+  title        String
+  content      String          @default("{}")
+  completeness Int             @default(0)
+  isPublic     Boolean         @default(false)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  versions     ResumeVersion[]
+  templateId   String?
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  template     ResumeTemplate? @relation(fields: [templateId], references: [id])
+  uploadFiles  UploadFile[]
+
+  @@index([userId])
+  @@index([templateId])
+}
+
+model ResumeVersion {
+  id             String          @id @default(cuid())
+  resumeId       String
+  version        Int
+  data           Json
+  createdAt      DateTime        @default(now())
+  resume         Resume          @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  resumeSections ResumeSection[]
+
+  @@unique([resumeId, version])
+  @@index([resumeId])
+}
+
+model ResumeSection {
+  id        String        @id @default(cuid())
+  versionId String
+  type      String
+  content   Json
+  order     Int           @default(0)
+  version   ResumeVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+
+  @@index([versionId])
+}
+
+model ResumeTemplate {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  designJson  Json
+  thumbnail   String?
+  isPremium   Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  resumes     Resume[]
+
+  @@index([isPremium])
+  @@index([isActive])
+}
+
+model UploadFile {
+  id        String   @id @default(cuid())
+  userId    String
+  resumeId  String?
+  path      String
+  mimeType  String
+  size      Int
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resume    Resume?  @relation(fields: [resumeId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([resumeId])
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String
+  details   Json?
+  ipAddress String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model ArcjetEvent {
+  id        String   @id @default(cuid())
+  userId    String?
+  ip        String?
+  eventType String
+  metadata  Json?
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([ip])
+  @@index([createdAt])
+}
+
+model Referral {
+  id             String    @id @default(cuid())
+  referrerId     String
+  referredId     String
+  code           String    @unique
+  creditsAwarded Int       @default(0)
+  status         String
+  createdAt      DateTime  @default(now())
+  completedAt    DateTime?
+
+  // Fixed: Correctly map to User using the relationship names
+  referrer User @relation("ReferrerUser", fields: [referrerId], references: [id], onDelete: Cascade)
+  referred User @relation("ReferredUser", fields: [referredId], references: [id], onDelete: Cascade)
+
+  @@index([referrerId])
+  @@index([referredId])
+  @@index([code])
+}
+
+model Coupon {
+  id        String        @id @default(cuid())
+  code      String        @unique
+  type      String
+  value     Int
+  maxUses   Int?
+  usedCount Int           @default(0)
+  expiresAt DateTime?
+  isActive  Boolean       @default(true)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  usages    CouponUsage[]
+
+  @@index([code])
+  @@index([isActive])
+}
+
+model CouponUsage {
+  id        String   @id @default(cuid())
+  couponId  String
+  userId    String
+  createdAt DateTime @default(now())
+  coupon    Coupon   @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([couponId, userId])
+  @@index([couponId])
+  @@index([userId])
+}
+
+model Team {
+  id         String       @id @default(cuid())
+  name       String
+  ownerId    String
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  members    TeamMember[]
+  workspaces Workspace[]
+
+  @@index([ownerId])
+}
+
+model TeamMember {
+  id        String   @id @default(cuid())
+  teamId    String
+  userId    String
+  role      String
+  createdAt DateTime @default(now())
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+  @@index([teamId])
+  @@index([userId])
+}
+
+model Workspace {
+  id        String   @id @default(cuid())
+  teamId    String
+  name      String
+  settings  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@index([teamId])
+}

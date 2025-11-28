@@ -1,6 +1,8 @@
 import "@/app/globals.css";
+import { CookieConsentBanner } from "@/components/CookieConsentBanner";
 import { QueryProvider } from "@/components/provider/quer-provider";
 import { ThemeProvider } from "@/components/provider/theme-provider";
+import { AnalyticsProvider } from "@/providers/PostHogProvider"; // Assuming PostHogProvider.tsx now exports AnalyticsProvider
 import { Toaster } from "sonner";
 
 export const metadata = {
@@ -15,18 +17,22 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="bg-background text-foreground min-h-screen flex flex-col">
-        <QueryProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            {children}
-          </ThemeProvider>
-          <Toaster position="bottom-right" />
-        </QueryProvider>
+      <body className=\"bg-background text-foreground min-h-screen flex flex-col\">
+        <AnalyticsProvider>
+          <QueryProvider>
+            <ThemeProvider
+              attribute=\"class\"
+              defaultTheme=\"system\"
+              enableSystem
+              disableTransitionOnChange
+            >
+              {children}
+            </ThemeProvider>
+            <Toaster position=\"bottom-right\" />
+          </QueryProvider>
+        </AnalyticsProvider>
+
+        <CookieConsentBanner />
       </body>
     </html>
   );
