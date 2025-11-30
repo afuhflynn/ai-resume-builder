@@ -1,4 +1,3 @@
-import { ResumeData } from "@/providers/ResumeProvider";
 import { Mail, Phone, MapPin, Linkedin, Globe } from "lucide-react";
 
 export function ModernTemplate({ data }: { data: ResumeData }) {
@@ -8,59 +7,72 @@ export function ModernTemplate({ data }: { data: ResumeData }) {
   return (
     <div className="w-full h-full min-h-[297mm] bg-white text-slate-900 font-sans p-8 md:p-12">
       {/* Header */}
-      <div
-        className="flex justify-between items-start border-b-2 pb-8 mb-8"
-        style={{ borderColor: themeColor }}
-      >
-        <div className="flex-1">
-          <h1
-            className="text-4xl font-bold uppercase tracking-tight mb-2"
-            style={{ color: themeColor }}
-          >
-            {personalInfo.fullName}
-          </h1>
-          <p className="text-xl font-medium text-slate-600 mb-4">
-            {personalInfo.jobTitle}
-          </p>
-          <p className="text-sm text-slate-600 leading-relaxed max-w-xl">
-            {summary}
-          </p>
-        </div>
+      <div className="p-8 px-0">
+        <h1
+          className="text-4xl font-bold  mb-2 tracking-tight uppercase"
+          style={{ color: themeColor }}
+        >
+          {personalInfo.fullName}
+        </h1>
+        <p className="text-xl font-medium mb-6">{personalInfo.jobTitle}</p>
 
-        <div className="flex flex-col gap-2 text-sm text-slate-600 items-end">
+        <div className="flex flex-wrap gap-4 text-sm">
           {personalInfo.email && (
-            <div className="flex items-center gap-2">
-              <span>{personalInfo.email}</span>
-              <Mail className="h-4 w-4" />
+            <div className="flex items-center gap-1.5">
+              <Mail className="h-3.5 w-3.5" />
+              <a
+                href={`mailto:${personalInfo.email}`}
+                className="hover:underline"
+              >
+                {personalInfo.email}
+              </a>
             </div>
           )}
           {personalInfo.phone && (
-            <div className="flex items-center gap-2">
-              <span>{personalInfo.phone}</span>
-              <Phone className="h-4 w-4" />
+            <div className="flex items-center gap-1.5">
+              <Phone className="h-3.5 w-3.5" />
+              <a href={`tel:${personalInfo.phone}`} className="hover:underline">
+                Tel Phone: {personalInfo.phone}
+              </a>
             </div>
           )}
           {personalInfo.location && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
+              <MapPin className="h-3.5 w-3.5" />
               <span>{personalInfo.location}</span>
-              <MapPin className="h-4 w-4" />
             </div>
           )}
           {personalInfo.linkedin && (
-            <div className="flex items-center gap-2">
-              <span>LinkedIn</span>
-              <Linkedin className="h-4 w-4" />
+            <div className="flex items-center gap-1.5">
+              <Linkedin className="h-3.5 w-3.5" />
+              <a href={personalInfo.linkedin} className="hover:underline">
+                LinkedIn
+              </a>
             </div>
           )}
           {personalInfo.website && (
-            <div className="flex items-center gap-2">
-              <span>Portfolio</span>
-              <Globe className="h-4 w-4" />
+            <div className="flex items-center gap-1.5">
+              <Globe className="h-3.5 w-3.5" />
+              <a href={personalInfo.website} className="hover:underline">
+                {personalInfo.website}
+              </a>
             </div>
           )}
         </div>
       </div>
 
+      {/* Summary */}
+      {summary && (
+        <div className="backdrop-blur-sm bg-white/60 border border-white/60 rounded-xl mb-4 shadow-sm">
+          <h2
+            className="text-lg uppercase font-bold mb-3 flex items-center gap-2"
+            style={{ color: themeColor }}
+          >
+            Professional Summary
+          </h2>
+          <p className="text-sm leading-relaxed text-slate-700">{summary}</p>
+        </div>
+      )}
       <div className="grid grid-cols-12 gap-8">
         {/* Main Column */}
         <div className="col-span-8 flex flex-col gap-8">

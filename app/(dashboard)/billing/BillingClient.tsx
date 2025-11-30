@@ -14,12 +14,19 @@ import { Check, Loader2 } from "lucide-react";
 import { BILLING_PLANS } from "@/lib/stripe";
 import { toast } from "sonner";
 
+import { FlutterwaveButton } from "@/components/billing/FlutterwaveButton";
+
 interface BillingClientProps {
   subscription: any;
   user: any;
+  plans: any[];
 }
 
-export function BillingClient({ subscription, user }: BillingClientProps) {
+export function BillingClient({
+  subscription,
+  user,
+  plans,
+}: BillingClientProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleCheckout = async (planKey: string) => {
@@ -106,6 +113,8 @@ export function BillingClient({ subscription, user }: BillingClientProps) {
         <div className="grid gap-6 md:grid-cols-3">
           {Object.entries(BILLING_PLANS).map(([key, plan]) => {
             const isCurrent = currentPlanName === plan.name;
+            const dbPlan = plans.find((p) => p.name === plan.name);
+
             return (
               <Card key={key} className={isCurrent ? "border-primary" : ""}>
                 <CardHeader>
@@ -124,7 +133,7 @@ export function BillingClient({ subscription, user }: BillingClientProps) {
                     ))}
                   </ul>
                 </CardContent>
-                <CardFooter>
+                <CardFooter className="flex flex-col gap-3">
                   <Button
                     className="w-full"
                     onClick={() => handleCheckout(key)}
@@ -134,8 +143,26 @@ export function BillingClient({ subscription, user }: BillingClientProps) {
                     {isLoading ? (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     ) : null}
-                    {isCurrent ? "Current Plan" : `Upgrade to ${plan.name}`}
+                    {isCurrent ? "Current Plan" : `Pay with Card (Stripe)`}
                   </Button>
+
+                  {!isCurrent && dbPlan && (
+                    <div className="w-full">
+                      <div className="relative flex items-center py-2">
+                        <div className="flex-grow border-t border-gray-200"></div>
+                        <span className="flex-shrink-0 mx-2 text-xs text-gray-400">
+                          OR
+                        </span>
+                        <div className="flex-grow border-t border-gray-200"></div>
+                      </div>
+                      <FlutterwaveButton
+                        planId={dbPlan.id}
+                        planName={plan.name}
+                        amount={plan.price * 100}
+                        className="w-full bg-orange-600 hover:bg-orange-700 text-white"
+                      />
+                    </div>
+                  )}
                 </CardFooter>
               </Card>
             );

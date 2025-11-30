@@ -43,12 +43,16 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 interface Resume {
   id: string;
   title: string;
   updatedAt: string;
   completeness: number;
+  template?: {
+    thumbnail: string | null;
+  };
 }
 
 export default function ResumesPage() {
@@ -101,7 +105,7 @@ export default function ResumesPage() {
   );
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 p-4 lg:p-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">My Resumes</h1>
@@ -152,7 +156,7 @@ export default function ResumesPage() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem
-                        onClick={() => router.push(`/resumes/${resume.id}`)}
+                        onClick={() => router.push(`/editor/${resume.id}`)}
                       >
                         <Pencil className="mr-2 h-4 w-4" /> Edit
                       </DropdownMenuItem>
@@ -180,10 +184,16 @@ export default function ResumesPage() {
               </CardHeader>
               <CardContent className="flex-1">
                 <div className="aspect-210/297 w-full bg-muted rounded-md flex items-center justify-center mb-4 border overflow-hidden relative">
-                  {/* Placeholder for thumbnail - could be generated later */}
-                  <div className="absolute inset-0 flex items-center justify-center bg-linear-to-br from-muted/50 to-muted">
+                  <Image
+                    src={resume.template?.thumbnail || "/place-holder.png"}
+                    alt={resume.title}
+                    height={377.02}
+                    width={266}
+                    className="h-full w-full object-cover hover:scale-110 duration-500 transition-all"
+                  />
+                  {/* <div className="absolute inset-0 flex items-center justify-center bg-linear-to-br from-muted/50 to-muted hover:scale-3d">
                     <FileText className="h-12 w-12 text-muted-foreground/30" />
-                  </div>
+                  </div> */}
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
@@ -199,7 +209,7 @@ export default function ResumesPage() {
                 </div>
               </CardContent>
               <CardFooter>
-                <Link href={`/resumes/${resume.id}`} className="w-full">
+                <Link href={`/editor/${resume.id}`} className="w-full">
                   <Button variant="outline" className="w-full">
                     Open Editor
                   </Button>

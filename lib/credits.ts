@@ -50,7 +50,7 @@ export async function deductCredits(
   userId: string,
   action: keyof typeof AI_CREDIT_COSTS,
   metadata?: Record<string, any>
-): Promise<{ success: boolean; remaining: number; error?: string }> {
+): Promise<{ success: boolean; remainingCredits: number; error?: string }> {
   const creditsNeeded = AI_CREDIT_COSTS[action];
   const available = await getUserCredits(userId);
 
@@ -64,15 +64,15 @@ export async function deductCredits(
         metadata: metadata || {},
       },
     });
-    return { success: true, remaining: -1 };
+    return { success: true, remainingCredits: -1 };
   }
 
   // Insufficient credits
   if (available < creditsNeeded) {
     return {
       success: false,
-      remaining: available,
-      error: `Insufficient credits. Need ${creditsNeeded}, have ${available}`,
+      remainingCredits: available,
+      error: "Insufficient credits",
     };
   }
 
@@ -86,10 +86,22 @@ export async function deductCredits(
     },
   });
 
-  return {
-    success: true,
-    remaining: available - creditsNeeded,
-  };
+  const newBalance = available - creditsNeeded;
+
+  // Check for low credits alert (threshold: 10)
+  const LOW_CREDIT_THRESHOLD = 10;
+  if (newBalance < LOW_CREDIT_THRESHOLD) {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (user && user.email) {
+      // Import dynamically to avoid circular dependencies if any
+      const { sendLowCreditsAlert } = await import("@/lib/email/sender");
+      sendLowCreditsAlert(user.email, newBalance).catch((err) =>
+        console.error("Failed to send low credit alert:", err)
+      );
+    }
+  }
+
+  return { success: true, remainingCredits: newBalance };
 }
 
 export async function getCreditUsageHistory(

@@ -30,7 +30,12 @@ export function CreativeTemplate({ data }: { data: ResumeData }) {
               <div className="bg-white/20 p-1.5 rounded-md">
                 <Mail className="h-3.5 w-3.5" />
               </div>
-              <span className="break-all">{personalInfo.email}</span>
+              <a
+                href={`tel:${personalInfo.email}`}
+                className="hover:underline text-sm break-all"
+              >
+                {personalInfo.email}
+              </a>
             </div>
           )}
           {personalInfo.phone && (
@@ -38,7 +43,12 @@ export function CreativeTemplate({ data }: { data: ResumeData }) {
               <div className="bg-white/20 p-1.5 rounded-md">
                 <Phone className="h-3.5 w-3.5" />
               </div>
-              <span>{personalInfo.phone}</span>
+              <a
+                href={`tel:${personalInfo.phone}`}
+                className="hover:underline text-sm"
+              >
+                Tel Phone: {personalInfo.phone}
+              </a>
             </div>
           )}
           {personalInfo.location && (
@@ -54,7 +64,15 @@ export function CreativeTemplate({ data }: { data: ResumeData }) {
               <div className="bg-white/20 p-1.5 rounded-md">
                 <Linkedin className="h-3.5 w-3.5" />
               </div>
-              <span className="break-all">{personalInfo.linkedin}</span>
+              <a
+                href={`tel:${personalInfo.linkedin}`}
+                className="hover:underline text-sm"
+              >
+                {personalInfo.linkedin.replace(
+                  /^https?:\/\/(www\.)?linkedin\.com\/in\//,
+                  ""
+                )}
+              </a>
             </div>
           )}
           {personalInfo.website && (
@@ -62,7 +80,12 @@ export function CreativeTemplate({ data }: { data: ResumeData }) {
               <div className="bg-white/20 p-1.5 rounded-md">
                 <Globe className="h-3.5 w-3.5" />
               </div>
-              <span className="break-all">{personalInfo.website}</span>
+              <a
+                href={personalInfo.website}
+                className="hover:underline break-all"
+              >
+                {personalInfo.website.replace(/^https?:\/\//, "")}
+              </a>
             </div>
           )}
         </div>
@@ -85,6 +108,7 @@ export function CreativeTemplate({ data }: { data: ResumeData }) {
             </div>
           </div>
         )}
+        {/* Projects */}
 
         {/* Education in Sidebar */}
         {education.length > 0 && (

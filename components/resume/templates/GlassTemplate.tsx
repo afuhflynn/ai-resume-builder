@@ -31,13 +31,23 @@ export function GlassTemplate({ data }: { data: ResumeData }) {
             {personalInfo.email && (
               <div className="flex items-center gap-1.5">
                 <Mail className="h-3.5 w-3.5" />
-                <span>{personalInfo.email}</span>
+                <a
+                  href={`mailto:${personalInfo.email}`}
+                  className="hover:underline"
+                >
+                  {personalInfo.email}
+                </a>
               </div>
             )}
             {personalInfo.phone && (
               <div className="flex items-center gap-1.5">
                 <Phone className="h-3.5 w-3.5" />
-                <span>{personalInfo.phone}</span>
+                <a
+                  href={`tel:${personalInfo.phone}`}
+                  className="hover:underline"
+                >
+                  Tel Phone: {personalInfo.phone}
+                </a>
               </div>
             )}
             {personalInfo.location && (
@@ -49,13 +59,17 @@ export function GlassTemplate({ data }: { data: ResumeData }) {
             {personalInfo.linkedin && (
               <div className="flex items-center gap-1.5">
                 <Linkedin className="h-3.5 w-3.5" />
-                <span>{personalInfo.linkedin}</span>
+                <a href={personalInfo.linkedin} className="hover:underline">
+                  LinkedIn
+                </a>
               </div>
             )}
             {personalInfo.website && (
               <div className="flex items-center gap-1.5">
                 <Globe className="h-3.5 w-3.5" />
-                <span>{personalInfo.website}</span>
+                <a href={personalInfo.website} className="hover:underline">
+                  {personalInfo.website}
+                </a>
               </div>
             )}
           </div>
@@ -144,6 +158,8 @@ export function GlassTemplate({ data }: { data: ResumeData }) {
                 </div>
               </div>
             )}
+
+            {/* Projects */}
 
             {/* Education */}
             {education.length > 0 && (

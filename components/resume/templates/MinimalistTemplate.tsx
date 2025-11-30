@@ -1,9 +1,15 @@
-import { ResumeData } from "@/providers/ResumeProvider";
 import { Mail, Phone, MapPin, Linkedin, Globe } from "lucide-react";
 
 export function MinimalistTemplate({ data }: { data: ResumeData }) {
-  const { personalInfo, summary, experience, education, skills, themeColor } =
-    data;
+  const {
+    personalInfo,
+    summary,
+    experience,
+    education,
+    skills,
+    themeColor,
+    projects,
+  } = data;
 
   return (
     <div className="w-full h-full min-h-[297mm] bg-white text-slate-900 font-sans p-12">
@@ -17,7 +23,14 @@ export function MinimalistTemplate({ data }: { data: ResumeData }) {
         </p>
 
         <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-500 font-light">
-          {personalInfo.email && <span>{personalInfo.email}</span>}
+          {personalInfo.email && (
+            <a
+              href={`mailto:${personalInfo.email}`}
+              className="hover:underline"
+            >
+              {personalInfo.email}
+            </a>
+          )}
           {personalInfo.phone && <span>{personalInfo.phone}</span>}
           {personalInfo.location && <span>{personalInfo.location}</span>}
           {personalInfo.linkedin && (
@@ -75,6 +88,62 @@ export function MinimalistTemplate({ data }: { data: ResumeData }) {
           </section>
         )}
 
+        {/* Skills */}
+        {skills.length > 0 && (
+          <section>
+            <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400 mb-4">
+              Skills
+            </h2>
+            <div className="flex flex-wrap gap-x-8 gap-y-2">
+              {skills.map((skill) => (
+                <span key={skill.id} className="text-sm text-slate-700">
+                  {skill.name}
+                </span>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Projects */}
+        {projects.length > 0 && (
+          <section>
+            <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400 mb-6">
+              Projects
+            </h2>
+            <div className="flex flex-col gap-8">
+              {projects.map((prt) => (
+                <div key={prt.id} className="gap-4 ">
+                  <div className="col-span-9">
+                    <h3 className="font-semibold text-slate-900 mb-1">
+                      {prt.name}
+                    </h3>
+                    <div className="text-sm text-slate-500 mb-3">
+                      <a href={prt.url} className="cursor-pointer">
+                        Live Demo
+                      </a>
+                    </div>
+                  </div>
+                  <p className="text-slate-700 leading-relaxed text-sm my-2">
+                    {prt.description}
+                  </p>
+                  <div className="flex gap-2 items-center text-sm">
+                    <h3 className="font-semibold">Tech Stack: </h3>
+                    {prt.technologies.map((tech, index) => (
+                      <span key={index}>
+                        {`${
+                          index === prt.technologies.length - 1
+                            ? `${tech}`
+                            : `${tech}, `
+                        }`}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* Education */}
         {education.length > 0 && (
           <section>
@@ -96,22 +165,6 @@ export function MinimalistTemplate({ data }: { data: ResumeData }) {
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Skills */}
-        {skills.length > 0 && (
-          <section>
-            <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400 mb-4">
-              Skills
-            </h2>
-            <div className="flex flex-wrap gap-x-8 gap-y-2">
-              {skills.map((skill) => (
-                <span key={skill.id} className="text-sm text-slate-700">
-                  {skill.name}
-                </span>
               ))}
             </div>
           </section>

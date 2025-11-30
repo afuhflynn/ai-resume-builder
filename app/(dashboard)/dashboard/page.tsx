@@ -55,7 +55,7 @@ export default function DashboardPage() {
   }, []);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 p-4 lg:p-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
@@ -120,7 +120,7 @@ export default function DashboardPage() {
         ) : resumes.length > 0 ? (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {resumes.slice(0, 3).map((resume) => (
-              <Link key={resume.id} href={`/resumes/${resume.id}`}>
+              <Link key={resume.id} href={`/editor/${resume.id}`}>
                 <Card className="hover:shadow-md transition-shadow cursor-pointer h-full flex flex-col">
                   <CardHeader>
                     <CardTitle className="truncate">{resume.title}</CardTitle>

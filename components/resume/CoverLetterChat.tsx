@@ -21,21 +21,33 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 interface CoverLetterChatProps {
   resumeData?: any;
+  initialData?: {
+    companyName: string;
+    jobTitle: string;
+    jobDescription: string;
+    resumeId?: string;
+    tone: "professional" | "enthusiastic" | "formal";
+  };
 }
 
 export function CoverLetterChat({
   resumeData: externalResumeData,
+  initialData,
 }: CoverLetterChatProps = {}) {
   const resumeContext = useResume();
   const resumeData = externalResumeData || resumeContext?.resumeData;
 
-  const [step, setStep] = useState<"input" | "chat">("input");
+  const [step, setStep] = useState<"input" | "chat">(
+    initialData ? "chat" : "input"
+  );
 
-  // Input state
-  const [jobTitle, setJobTitle] = useState("");
-  const [company, setCompany] = useState("");
-  const [jobDescription, setJobDescription] = useState("");
-  const [tone, setTone] = useState("professional");
+  // Input state - initialize with initialData if provided
+  const [jobTitle, setJobTitle] = useState(initialData?.jobTitle || "");
+  const [company, setCompany] = useState(initialData?.companyName || "");
+  const [jobDescription, setJobDescription] = useState(
+    initialData?.jobDescription || ""
+  );
+  const [tone, setTone] = useState(initialData?.tone || "professional");
 
   const {
     messages,
@@ -61,6 +73,21 @@ export function CoverLetterChat({
   });
 
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Auto-start chat if initialData is provided
+  useEffect(() => {
+    if (initialData && messages.length === 0) {
+      append({
+        role: "user",
+        content: `Please write a ${initialData.tone} cover letter for a ${
+          initialData.jobTitle || "role"
+        } position at ${initialData.companyName || "a company"}.
+
+Job Description:
+${initialData.jobDescription}`,
+      });
+    }
+  }, [initialData]);
 
   useEffect(() => {
     if (scrollRef.current) {

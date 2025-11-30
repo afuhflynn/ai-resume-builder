@@ -216,6 +216,7 @@
   - [x] Show revenue metrics
   - [x] Manage coupons and referrals
   - [x] View system health
+  - [x] Create health check page
 
 ### Analytics & Monitoring
 - [x] **User Analytics**
@@ -224,16 +225,19 @@
   - [x] Track AI usage
   - [x] Track conversion funnel
 
-- [ ] **Error Monitoring**
-  - [ ] Add Sentry integration
-  - [ ] Set up error alerts
+- [/] **Error Monitoring**
+  - [x] Add Sentry integration
+  - [x] Set up error alerts
   - [ ] Add performance monitoring
 
 ### Additional Features
-- [ ] **Resume Versioning**
-  - [ ] Add version history to Resume model
-  - [ ] Create version comparison UI
-  - [ ] Add restore version functionality
+- [x] **Resume Versioning**
+  - [x] Add version history to Resume model (schema already had it)
+  - [x] Create version comparison UI
+  - [x] Add restore version functionality
+  - [x] Create API routes for version management
+  - [x] Add version history sidebar component
+  - [x] Integrate into resume builder
 
 - [ ] **Email Notifications**
   - [ ] Set up email service (Resend or SendGrid)
@@ -500,3 +504,26 @@ pnpm add @sentry/nextjs
 - ✅ Admin panel
 - ✅ Analytics integrated
 - ✅ Marketing features
+
+### Advance
+
+[] User should be able to add some other advance sections including education
+[] ATS Analysis (select from existing ones or upload a resume) (This has to take note of a job scenario either filled in by the user or from already created job templates in the db or some data file in the apps codebase.)
+
+[] Make the templates tab active and work in the resume builder
+[] Ensure that resume templates are stored in the db and each resume data from the db is taken to form a resume based on the template id and the appropriate resume image is generated to display on the general resume page.
+[] Add all resume templates to the database.
+[] Ensure there is a default color for all resumes created.
+[] And there is also a default resume template id for all resumes all from the ones stored in the db.
+[] Also make sure that
+
+[] Fix error: `Resume import error: Error: Setting up fake worker failed: "Cannot find module '/home/tembeng/Documents/new_projects/ai-resume-builder/.next/dev/server/chunks/pdf.worker.mjs' imported from /home/tembeng/Documents/new_projects/ai-resume-builder/.next/dev/server/chunks/32f72_pdfjs-dist_legacy_build_pdf_mjs_a1dfb4aa._.js".
+    at <unknown> (webpack://pdf.js/src/display/api.js:2278:11)
+  2276 |       .catch(reason => {
+  2277 |         this.#capability.reject(
+> 2278 |           new Error(`Setting up fake worker failed: "${reason.message}".`)
+       |           ^
+  2279 |         );
+  2280 |       });
+  2281 |   }
+ POST /api/resumes/import 500 in 3.2s (compile: 2.7s, proxy.ts: 9ms, render: 438ms)`

@@ -44,47 +44,125 @@ export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const decision = await ajAuth.protect(req);
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session || !session.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const decision = await ajAuth.protect(req, {
+    requested: 1,
+    userId: session.user.id,
+  });
 
   if (decision.isDenied()) {
     return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   }
 
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session || !session.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await req.json();
-    const { title, content, completeness } = body;
+    const {
+      title,
+      completeness,
+      fullName,
+      jobTitle,
+      email,
+      phone,
+      location,
+      website,
+      linkedin,
+      x,
+      professionalSummary,
+      experiences,
+      skills,
+      projects,
+      educations,
+      templateId,
+      themeColor,
+    } = body;
     const { id } = await params;
 
-    // const existingResume = await prisma.resume.findUnique({
-    //   where: { id },
-    // });
+    const existingResume = await prisma.resume.findUnique({
+      where: { id, userId: session.user.id },
+    });
 
-    // if (!existingResume) {
-    //   return NextResponse.json({ error: "Resume not found" }, { status: 404 });
-    // }
-
-    // if (existingResume.userId !== session.user.id) {
-    //   return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    // }
+    if (!existingResume) {
+      return NextResponse.json({ error: "Resume not found" }, { status: 404 });
+    }
 
     const updatedResume = await prisma.resume.upsert({
       where: { id },
       update: {
         title,
+        completeness,
+        fullName,
+        jobTitle,
+        email,
+        phone,
+        location,
+        website,
+        linkedin,
+        x,
+        professionalSummary,
+        experiences,
+        skills,
+        projects,
+        educations,
+        templateId,
+        colorTheme: themeColor,
       },
       create: {
         title,
         userId: session.user.id,
+        completeness,
+        fullName,
+        jobTitle,
+        email,
+        phone,
+        location,
+        website,
+        linkedin,
+        x,
+        professionalSummary,
+        experiences,
+        skills,
+        projects,
+        educations,
+        templateId,
+        colorTheme: themeColor,
       },
     });
+
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: {
+        id: session.user.id,
+      },
+      data: {
+        fullName: user.fullName || updatedResume.fullName,
+        phone: user.phone || updatedResume.phone,
+        location: user.location || updatedResume.location,
+        website: user.website || updatedResume.website,
+        linkedin: user.linkedin || updatedResume.linkedin,
+        x: user.x || updatedResume.x,
+        bio: user.bio || updatedResume.professionalSummary,
+      },
+    });
+
+    if (!updatedUser) {
+      return NextResponse.json(
+        { error: "An unexpected error occurred." },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json(updatedResume);
   } catch (error) {

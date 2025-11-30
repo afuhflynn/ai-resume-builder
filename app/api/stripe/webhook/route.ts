@@ -3,6 +3,7 @@ import { stripe, BILLING_PLANS } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
 import Stripe from "stripe";
 import { PostHog } from "posthog-node";
+import { sendPaymentReceipt } from "@/lib/email/sender";
 
 // Initialize PostHog client for server-side
 const posthogClient = new PostHog(process.env.POSTHOG_API_KEY as string, {
@@ -19,7 +20,7 @@ export async function POST(req: NextRequest) {
     event = stripe.webhooks.constructEvent(
       body,
       signature,
-      process.env.STRIPE_WEBHOOK_SECRET!,
+      process.env.STRIPE_WEBHOOK_SECRET!
     );
   } catch (error: any) {
     console.error(`Webhook signature verification failed: ${error.message}`);
@@ -66,8 +67,9 @@ export async function POST(req: NextRequest) {
           });
 
           // Retrieve subscription details from Stripe to get accurate period end
-          const stripeSubscription =
-            await stripe.subscriptions.retrieve(subscriptionId);
+          const stripeSubscription = await stripe.subscriptions.retrieve(
+            subscriptionId
+          );
 
           // Upsert subscription
           await prisma.subscription.upsert({
@@ -77,7 +79,7 @@ export async function POST(req: NextRequest) {
               stripeSubscriptionId: subscriptionId,
               status: stripeSubscription.status,
               currentPeriodEnd: new Date(
-                stripeSubscription.current_period_end * 1000,
+                stripeSubscription.current_period_end * 1000
               ),
               cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
             },
@@ -87,7 +89,7 @@ export async function POST(req: NextRequest) {
               stripeSubscriptionId: subscriptionId,
               status: stripeSubscription.status,
               currentPeriodEnd: new Date(
-                stripeSubscription.current_period_end * 1000,
+                stripeSubscription.current_period_end * 1000
               ),
               cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
             },
@@ -106,6 +108,16 @@ export async function POST(req: NextRequest) {
               billingPlanId: billingPlan.id,
             },
           });
+
+          // Send payment confirmation email
+          const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { email: true },
+          });
+
+          if (user?.email) {
+            await sendPaymentReceipt(user.email, plan.name, plan.price * 100);
+          }
         }
         break;
 
@@ -117,7 +129,7 @@ export async function POST(req: NextRequest) {
           data: {
             status: updatedSubscription.status,
             currentPeriodEnd: new Date(
-              updatedSubscription.current_period_end * 1000,
+              updatedSubscription.current_period_end * 1000
             ),
             cancelAtPeriodEnd: updatedSubscription.cancel_at_period_end,
           },
@@ -138,7 +150,7 @@ export async function POST(req: NextRequest) {
               status: updatedSubscription.status,
               cancelAtPeriodEnd: updatedSubscription.cancel_at_period_end,
               currentPeriodEnd: new Date(
-                updatedSubscription.current_period_end * 1000,
+                updatedSubscription.current_period_end * 1000
               ).toISOString(),
             },
           });
@@ -224,7 +236,7 @@ export async function POST(req: NextRequest) {
     });
     return NextResponse.json(
       { error: "Webhook handler failed" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

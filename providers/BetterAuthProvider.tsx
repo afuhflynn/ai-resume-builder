@@ -13,11 +13,21 @@ const authClient = createAuthClient({
   baseURL: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
 });
 
+type User = {
+  id: string;
+  email: string;
+  name: string;
+  emailVerified: boolean;
+  image?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 type BetterAuthContextType = {
-  user: any | null;
+  user: User | null;
   isLoading: boolean;
-  signIn: (email: string, password: string) => Promise<any>;
-  signUp: (email: string, password: string, name: string) => Promise<any>;
+  signIn: (email: string, password: string) => Promise<unknown>;
+  signUp: (email: string, password: string, name: string) => Promise<unknown>;
   signOut: () => Promise<void>;
   signInWithOAuth: (provider: "google" | "github") => Promise<void>;
 };
@@ -32,7 +42,7 @@ const BetterAuthContext = createContext<BetterAuthContextType>({
 });
 
 export function BetterAuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<any | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {

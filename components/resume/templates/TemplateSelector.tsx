@@ -1,84 +1,89 @@
 "use client";
 
-import { Check } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-
-export type TemplateId =
-  | "modern"
-  | "glass"
-  | "professional"
-  | "creative"
-  | "minimalist"
-  | "enhanced";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface TemplateSelectorProps {
-  selectedTemplate: TemplateId;
-  onSelect: (template: TemplateId) => void;
+  selectedTemplate: string | null | undefined;
+  onSelect: (templateId: string) => void;
 }
 
-const templates = [
-  {
-    id: "modern",
-    name: "Modern",
-    image: "https://placehold.co/300x400/e2e8f0/1e293b?text=Modern",
-  },
-  {
-    id: "glass",
-    name: "Glass",
-    image: "https://placehold.co/300x400/e2e8f0/1e293b?text=Glass",
-  },
-  {
-    id: "professional",
-    name: "Professional",
-    image: "https://placehold.co/300x400/e2e8f0/1e293b?text=Professional",
-  },
-  {
-    id: "creative",
-    name: "Creative",
-    image: "https://placehold.co/300x400/e2e8f0/1e293b?text=Creative",
-  },
-  {
-    id: "minimalist",
-    name: "Minimalist",
-    image: "https://placehold.co/300x400/e2e8f0/1e293b?text=Minimalist",
-  },
-  {
-    id: "enhanced",
-    name: "Enhanced Pro",
-    image: "https://placehold.co/300x400/E8F4F8/4A90E2?text=Enhanced+Pro",
-  },
-] as const;
+interface Template {
+  id: string;
+  name: string;
+  description: string | null;
+  thumbnail: string | null;
+  isPremium: boolean;
+}
 
 export function TemplateSelector({
   selectedTemplate,
   onSelect,
 }: TemplateSelectorProps) {
+  const [templates, setTemplates] = useState<Template[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchTemplates();
+  }, []);
+
+  const fetchTemplates = async () => {
+    try {
+      const response = await fetch("/api/templates");
+      if (!response.ok) throw new Error("Failed to fetch templates");
+      const data = await response.json();
+      setTemplates(data);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to load templates");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="w-full overflow-hidden py-4">
+        <h3 className="text-sm font-medium mb-3">Choose Template</h3>
+        <div className="flex justify-center items-center h-40">
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="w-full">
+    <div className="w-full overflow-hidden py-4">
       <h3 className="text-sm font-medium mb-3">Choose Template</h3>
-      <ScrollArea className="w-full whitespace-nowrap rounded-md border">
-        <div className="flex w-max space-x-4 p-4">
+      <ScrollArea className="w-full whitespace-nowrap rounded-md border overflow-auto">
+        <div className="flex w-full overflow-hidden space-x-4 p-4">
           {templates.map((template) => (
             <div key={template.id} className="relative group">
               <button
                 onClick={() => onSelect(template.id)}
                 className={cn(
-                  "relative overflow-hidden rounded-lg border-2 transition-all hover:border-primary w-[120px] h-[160px]",
+                  "relative overflow-hidden rounded-lg border-2 transition-all hover:border-primary w-[120px] h-[160px] group",
                   selectedTemplate === template.id
                     ? "border-primary ring-2 ring-primary ring-offset-2"
                     : "border-transparent"
                 )}
               >
                 <img
-                  src={template.image}
+                  src={template.thumbnail || "/place-holder.png"}
                   alt={template.name}
-                  className="object-cover w-full h-full"
+                  className="object-cover w-full h-full group-hover:scale-110 duration-500 transition-all"
                 />
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                   <span className="text-white text-xs font-bold">Select</span>
                 </div>
+                {template.isPremium && (
+                  <div className="absolute top-2 left-2 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded">
+                    PRO
+                  </div>
+                )}
               </button>
               <div className="text-center mt-2 text-xs font-medium">
                 {template.name}

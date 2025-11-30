@@ -7,9 +7,12 @@ import { headers } from "next/headers";
 import { PostHog } from "posthog-node"; // Assuming posthog-node is installed
 
 // Initialize PostHog client for server-side
-const posthogClient = new PostHog(process.env.POSTHOG_API_KEY as string, {
-  host: process.env.POSTHOG_HOST || "https://app.posthog.com",
-});
+const posthogClient = new PostHog(
+  process.env.NEXT_PUBLIC_POSTHOG_KEY as string,
+  {
+    host: process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://app.posthog.com",
+  }
+);
 
 export async function POST(req: NextRequest) {
   try {
@@ -27,7 +30,7 @@ export async function POST(req: NextRequest) {
     if (!jobTitle || !experience || !title) {
       return NextResponse.json(
         { error: "Missing job title, experience, or resume title" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -35,13 +38,13 @@ export async function POST(req: NextRequest) {
     const creditResult = await deductCredits(
       session.user.id,
       "GENERATE_RESUME",
-      { jobTitle, experience: experience.substring(0, 100) }, // Log only a part of experience
+      { jobTitle, experience: experience.substring(0, 100) } // Log only a part of experience
     );
 
     if (!creditResult.success) {
       return NextResponse.json(
         { error: creditResult.error, remaining: creditResult.remaining },
-        { status: 402 }, // Payment Required
+        { status: 402 } // Payment Required
       );
     }
 
@@ -102,7 +105,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(
       { error: "Internal server error during AI resume generation" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

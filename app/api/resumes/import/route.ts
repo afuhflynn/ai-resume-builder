@@ -18,16 +18,16 @@ export async function POST(req: NextRequest) {
 
     const formData = await req.formData();
     const file = formData.get("file") as File;
-    const title = formData.get("title") as string;
 
     if (!file) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
+    const title = file.name ?? "New Resume";
 
     if (!title || title.trim().length === 0) {
       return NextResponse.json(
         { error: "Resume title is required" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
     if (!validTypes.includes(file.type)) {
       return NextResponse.json(
         { error: "Invalid file type. Only PDF, DOCX, and TXT are supported." },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -53,10 +53,13 @@ export async function POST(req: NextRequest) {
     // Extract text
     const text = await extractTextFromFile(buffer, file.type);
 
+    console.log({ text });
+    return NextResponse.json({ message: "Great" });
+
     if (!text || text.trim().length === 0) {
       return NextResponse.json(
         { error: "Could not extract text from file" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -69,7 +72,7 @@ export async function POST(req: NextRequest) {
     if (!creditResult.success) {
       return NextResponse.json(
         { error: creditResult.error, remaining: creditResult.remaining },
-        { status: 402 }, // Payment Required
+        { status: 402 } // Payment Required
       );
     }
 
@@ -94,7 +97,7 @@ export async function POST(req: NextRequest) {
     console.error("Resume import error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

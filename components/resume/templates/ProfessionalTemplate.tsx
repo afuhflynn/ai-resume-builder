@@ -2,8 +2,15 @@ import { ResumeData } from "@/providers/ResumeProvider";
 import { Mail, Phone, MapPin, Linkedin, Globe } from "lucide-react";
 
 export function ProfessionalTemplate({ data }: { data: ResumeData }) {
-  const { personalInfo, summary, experience, education, skills, themeColor } =
-    data;
+  const {
+    personalInfo,
+    summary,
+    experience,
+    education,
+    skills,
+    themeColor,
+    projects,
+  } = data;
 
   return (
     <div className="w-full h-full min-h-[297mm] bg-white text-slate-900 font-serif p-10 md:p-14">
@@ -95,6 +102,27 @@ export function ProfessionalTemplate({ data }: { data: ResumeData }) {
           </section>
         )}
 
+        {/* Skills */}
+        {skills.length > 0 && (
+          <section>
+            <h2
+              className="text-sm font-bold uppercase tracking-widest mb-3 border-b pb-1"
+              style={{ color: themeColor, borderColor: `${themeColor}40` }}
+            >
+              Skills
+            </h2>
+            <div className="flex flex-wrap gap-x-6 gap-y-2">
+              {skills.map((skill) => (
+                <div key={skill.id} className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                  <span className="text-sm text-slate-700">{skill.name}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+        {/* Projects */}
+
         {/* Education */}
         {education.length > 0 && (
           <section>
@@ -116,26 +144,6 @@ export function ProfessionalTemplate({ data }: { data: ResumeData }) {
                   <div className="text-sm text-slate-600">
                     {edu.startDate} - {edu.current ? "Present" : edu.endDate}
                   </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Skills */}
-        {skills.length > 0 && (
-          <section>
-            <h2
-              className="text-sm font-bold uppercase tracking-widest mb-3 border-b pb-1"
-              style={{ color: themeColor, borderColor: `${themeColor}40` }}
-            >
-              Skills
-            </h2>
-            <div className="flex flex-wrap gap-x-6 gap-y-2">
-              {skills.map((skill) => (
-                <div key={skill.id} className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-                  <span className="text-sm text-slate-700">{skill.name}</span>
                 </div>
               ))}
             </div>

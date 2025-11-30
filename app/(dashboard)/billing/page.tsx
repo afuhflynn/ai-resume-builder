@@ -18,14 +18,22 @@ export default async function BillingPage() {
     include: { billingPlan: true },
   });
 
+  const plans = await prisma.billingPlan.findMany({
+    where: { isActive: true },
+  });
+
   return (
-    <div className="flex-1 space-y-4 p-8 pt-6">
+    <div className="flex-1 space-y-4 p-8 pt-6 lg:p-8">
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">
           Billing & Subscription
         </h2>
       </div>
-      <BillingClient subscription={subscription} user={session.user} />
+      <BillingClient
+        subscription={subscription}
+        user={session.user}
+        plans={plans}
+      />
     </div>
   );
 }

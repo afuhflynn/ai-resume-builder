@@ -1,4 +1,3 @@
-import { ResumeData } from "@/providers/ResumeProvider";
 import {
   Mail,
   Phone,
@@ -34,7 +33,7 @@ export function EnhancedProfessionalTemplate({
           {/* Profile Photo */}
           <div className="flex justify-center mb-6">
             <div className="w-40 h-40 rounded-full bg-white p-1 shadow-lg">
-              <div className="w-full h-full rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-5xl font-bold">
+              <div className="w-full h-full rounded-full bg-linear-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-5xl font-bold">
                 {data.personalInfo.fullName.charAt(0) || "U"}
               </div>
             </div>
@@ -62,27 +61,35 @@ export function EnhancedProfessionalTemplate({
               {data.personalInfo.email && (
                 <div className="flex items-start gap-3">
                   <Mail
-                    className="w-4 h-4 mt-0.5 flex-shrink-0"
+                    className="w-4 h-4 mt-0.5 shrink-0"
                     style={{ color: themeColor }}
                   />
-                  <span className="text-sm break-all">
+                  <a
+                    href={`tel:${data.personalInfo.email}`}
+                    className="hover:underline text-sm break-all"
+                  >
                     {data.personalInfo.email}
-                  </span>
+                  </a>
                 </div>
               )}
               {data.personalInfo.phone && (
                 <div className="flex items-start gap-3">
                   <Phone
-                    className="w-4 h-4 mt-0.5 flex-shrink-0"
+                    className="w-4 h-4 mt-0.5 shrink-0"
                     style={{ color: themeColor }}
                   />
-                  <span className="text-sm">{data.personalInfo.phone}</span>
+                  <a
+                    href={`tel:${data.personalInfo.phone}`}
+                    className="hover:underline text-sm"
+                  >
+                    Tel Phone: {data.personalInfo.phone}
+                  </a>
                 </div>
               )}
               {data.personalInfo.location && (
                 <div className="flex items-start gap-3">
                   <MapPin
-                    className="w-4 h-4 mt-0.5 flex-shrink-0"
+                    className="w-4 h-4 mt-0.5 shrink-0"
                     style={{ color: themeColor }}
                   />
                   <span className="text-sm">{data.personalInfo.location}</span>
@@ -91,32 +98,33 @@ export function EnhancedProfessionalTemplate({
               {data.personalInfo.website && (
                 <div className="flex items-start gap-3">
                   <Globe
-                    className="w-4 h-4 mt-0.5 flex-shrink-0"
+                    className="w-4 h-4 mt-0.5 shrink-0"
                     style={{ color: themeColor }}
                   />
-                  <span
-                    className="text-sm break-all"
+                  <a
+                    href={data.personalInfo.website}
+                    className="hover:underline break-all"
                     style={{ color: themeColor }}
                   >
                     {data.personalInfo.website.replace(/^https?:\/\//, "")}
-                  </span>
+                  </a>
                 </div>
               )}
               {data.personalInfo.linkedin && (
                 <div className="flex items-start gap-3">
                   <Linkedin
-                    className="w-4 h-4 mt-0.5 flex-shrink-0"
+                    className="w-4 h-4 mt-0.5 shrink-0"
                     style={{ color: themeColor }}
                   />
-                  <span
-                    className="text-sm break-all"
-                    style={{ color: themeColor }}
+                  <a
+                    href={`tel:${data.personalInfo.linkedin}`}
+                    className="hover:underline text-sm"
                   >
                     {data.personalInfo.linkedin.replace(
                       /^https?:\/\/(www\.)?linkedin\.com\/in\//,
                       ""
                     )}
-                  </span>
+                  </a>
                 </div>
               )}
             </div>
@@ -172,6 +180,8 @@ export function EnhancedProfessionalTemplate({
               )}
             </div>
           </div>
+
+          {/* Projects */}
 
           {/* Education Section */}
           {data.education.length > 0 && (

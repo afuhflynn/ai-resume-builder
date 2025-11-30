@@ -12,13 +12,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 export default function ReferralsPage() {
   const [referralCode, setReferralCode] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast();
 
   useEffect(() => {
     const fetchReferralCode = async () => {
@@ -37,10 +36,10 @@ export default function ReferralsPage() {
         const errorMessage =
           err instanceof Error ? err.message : "An unknown error occurred.";
         setError(errorMessage);
-        toast({
-          title: "Error",
-          description: "Could not fetch your referral code. Please try again later.",
-          variant: "destructive",
+
+        toast.error("Error", {
+          description:
+            "Could not fetch your referral code. Please try again later.",
         });
       } finally {
         setIsLoading(false);
@@ -48,7 +47,7 @@ export default function ReferralsPage() {
     };
 
     fetchReferralCode();
-  }, [toast]);
+  }, []);
 
   const referralLink = referralCode
     ? `${window.location.origin}/signup?ref=${referralCode}`
@@ -61,6 +60,10 @@ export default function ReferralsPage() {
       title: "Copied!",
       description: "Your referral link has been copied to the clipboard.",
     });
+
+    toast.success("Success", {
+      description: "Your referral link has been copied to the clipboard.",
+    });
   };
 
   // Placeholder stats - to be replaced with actual data from the backend
@@ -68,7 +71,7 @@ export default function ReferralsPage() {
   const creditsEarned = successfulReferrals * 50;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4 lg:p-8">
       <header>
         <h1 className="text-3xl font-bold tracking-tight">Referrals</h1>
         <p className="text-muted-foreground">
@@ -126,7 +129,9 @@ export default function ReferralsPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Credits Earned</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Credits Earned
+            </CardTitle>
             <Gift className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>

@@ -1,9 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -15,13 +21,20 @@ export default function ImportResumePage() {
   const [file, setFile] = useState<File | null>(null);
   const [resumeTitle, setResumeTitle] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const importFileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
       const selectedFile = event.target.files[0];
-      const validTypes = ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "text/plain"];
+      const validTypes = [
+        "application/pdf",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "text/plain",
+      ];
       if (!validTypes.includes(selectedFile.type)) {
-        toast.error("Invalid file type. Please upload a PDF, DOCX, or TXT file.");
+        toast.error(
+          "Invalid file type. Please upload a PDF, DOCX, or TXT file."
+        );
         setFile(null);
         return;
       }
@@ -110,24 +123,44 @@ export default function ImportResumePage() {
                 Give a title to your new resume.
               </p>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="resumeFile">Upload File</Label>
-              <Input
-                id="resumeFile"
-                type="file"
-                accept=".pdf,.docx,.txt"
-                onChange={handleFileChange}
-                required
-                disabled={isLoading}
-              />
-              {file && (
-                <p className="text-sm text-muted-foreground flex items-center gap-2 mt-2">
-                  <FileText className="h-4 w-4" />
-                  <span>Selected file: {file.name}</span>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="file">Resume File</Label>
+                <Input
+                  id="file"
+                  type="file"
+                  accept=".pdf,.docx,.txt"
+                  ref={importFileInputRef}
+                  onChange={(e) => handleFileChange(e)}
+                  className="hidden"
+                />
+                {/* Input overlay */}
+                <div
+                  className="h-20 w-full rounded-lg cursor-pointer border border-muted-foreground/50 hover:text-primary/50 hover:border-primary hover:border-2 border-dotted flex items-center justify-center text-center text-sm text-muted-foreground my-4"
+                  onClick={() => {
+                    if (importFileInputRef && importFileInputRef.current) {
+                      importFileInputRef.current.click();
+                    }
+                  }}
+                >
+                  {file ? (
+                    <span>
+                      {file.name} - {file.size}
+                    </span>
+                  ) : (
+                    <span>Drag and Drop or Click to import</span>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Supported formats: PDF, DOCX, TXT
                 </p>
-              )}
+              </div>
             </div>
-            <Button type="submit" className="w-full" disabled={isLoading || !file}>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={isLoading || !file}
+            >
               {isLoading ? (
                 <>
                   <Upload className="mr-2 h-4 w-4 animate-pulse" /> Importing...

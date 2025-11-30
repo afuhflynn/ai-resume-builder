@@ -4,15 +4,23 @@ import { FeaturesSection } from "@/components/landing/FeaturesSection";
 import { HowItWorksSection } from "@/components/landing/HowItWorksSection";
 import { TestimonialsSection } from "@/components/landing/TestimonialsSection";
 import { PricingSection } from "@/components/landing/PricingSection";
-// import { FAQSection } from "@/components/landing/FAQSection";
 import { CTASection } from "@/components/landing/CTASection";
 import { Footer } from "@/components/layout/Footer";
-import Faq1 from "@/components/mvp-blocks/faqs";
 import { FAQSection } from "@/components/landing/FAQSection";
+import Navbar from "@/components/layout/Navbar";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
-export default function Home() {
+export default async function Home() {
+  const session = await auth.api.getSession({ headers: await headers() });
+
+  if (session && session.user) {
+    redirect("/dashboard");
+  }
   return (
     <div className="flex min-h-screen flex-col bg-background font-sans">
+      <Navbar />
       <main className="flex-1">
         <HeroSection />
         <TrustSection />

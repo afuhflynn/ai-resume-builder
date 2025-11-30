@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useBetterAuth } from "@/providers/BetterAuthProvider";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,6 +28,8 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { signOut, useSession } from "@/lib/auth-client";
+import { toast } from "sonner";
 
 export default function DashboardLayout({
   children,
@@ -35,8 +37,11 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const { user, signOut } = useBetterAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const router = useRouter();
+  const { data: session } = useSession();
+
+  const user = session?.user;
 
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -46,8 +51,25 @@ export default function DashboardLayout({
     { name: "Settings", href: "/settings", icon: Settings },
   ];
 
+  const handleSignOut = () => {
+    signOut({
+      fetchOptions: {
+        onRequest() {
+          toast.info("Sign out in progress");
+        },
+        onError() {
+          toast.error("Signout failed. Try again");
+        },
+        onSuccess() {
+          toast.success("Signout successful!. See you again next time");
+          router.push("/dashboard");
+        },
+      },
+    });
+  };
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       {/* Mobile Header */}
       <div className="lg:hidden flex items-center justify-between p-4 border-b bg-card">
         <div className="flex items-center gap-2 font-bold text-xl text-primary">
@@ -70,10 +92,10 @@ export default function DashboardLayout({
       <div className="flex h-screen overflow-hidden">
         {/* Sidebar */}
 
-        <SidebarProvider className="w-auto!">
+        <SidebarProvider className="w-auto! bg-background!">
           <Sidebar
             className={cn(
-              "fixed inset-y-0 left-0 z-50 w-64 bg-card border-r transform transition-transform duration-200 ease-in-out lg:relative lg:translate-x-0",
+              "fixed inset-y-0 left-0 z-50 w-64 bg-background border-r transform transition-transform duration-200 ease-in-out lg:relative lg:translate-x-0",
               isSidebarOpen ? "translate-x-0" : "-translate-x-full"
             )}
           >
@@ -137,7 +159,7 @@ export default function DashboardLayout({
                 <Button
                   variant="outline"
                   className="w-full gap-2 text-muted-foreground"
-                  onClick={() => signOut()}
+                  onClick={handleSignOut}
                 >
                   <LogOut className="h-4 w-4" />
                   Sign Out
@@ -148,9 +170,7 @@ export default function DashboardLayout({
         </SidebarProvider>
 
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto bg-background p-4 lg:p-8">
-          {children}
-        </main>
+        <main className="flex-1 overflow-y-auto bg-background">{children}</main>
       </div>
 
       {/* Overlay for mobile sidebar */}

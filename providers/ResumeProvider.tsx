@@ -1,5 +1,6 @@
 "use client";
 
+import { Resume } from "@prisma/client";
 import {
   createContext,
   useContext,
@@ -8,61 +9,6 @@ import {
   useEffect,
 } from "react";
 import { toast } from "sonner";
-
-// Define types for resume data
-export type ResumeData = {
-  templateId:
-    | "modern"
-    | "glass"
-    | "professional"
-    | "creative"
-    | "minimalist"
-    | "enhanced";
-  themeColor: string;
-  personalInfo: {
-    fullName: string;
-    email: string;
-    phone: string;
-    location: string;
-    website: string;
-    linkedin: string;
-    jobTitle: string;
-  };
-  summary: string;
-  experience: Array<{
-    id: string;
-    company: string;
-    position: string;
-    startDate: string;
-    endDate: string;
-    current: boolean;
-    location: string;
-    description: string;
-  }>;
-  education: Array<{
-    id: string;
-    school: string;
-    degree: string;
-    field: string;
-    startDate: string;
-    endDate: string;
-    current: boolean;
-    location: string;
-    description: string;
-  }>;
-  skills: Array<{
-    id: string;
-    name: string;
-    level: "Beginner" | "Intermediate" | "Advanced" | "Expert";
-  }>;
-  projects: Array<{
-    id: string;
-    name: string;
-    description: string;
-    url: string;
-    technologies: string[];
-  }>;
-};
 
 const defaultResumeData: ResumeData = {
   templateId: "modern",
@@ -75,12 +21,14 @@ const defaultResumeData: ResumeData = {
     website: "",
     linkedin: "",
     jobTitle: "",
+    x: "",
   },
   summary: "",
   experience: [],
   education: [],
   skills: [],
   projects: [],
+  title: "",
 };
 
 type ResumeContextType = {
@@ -109,7 +57,7 @@ type ResumeContextType = {
   removeProject: (id: string) => void;
   updateTemplate: (templateId: ResumeData["templateId"]) => void;
   updateThemeColor: (color: string) => void;
-  saveResume: (id: string) => Promise<void>;
+  saveResume: (id: string, data: ResumeData) => Promise<void>;
   loadResume: (id: string) => Promise<void>;
   setResumeData: (data: ResumeData) => void;
 };
@@ -286,7 +234,7 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
     return Math.min(score, 100);
   };
 
-  const saveResume = async (id: string) => {
+  const saveResume = async (id: string, data: ResumeData) => {
     setIsSaving(true);
     try {
       const response = await fetch(`/api/resumes/${id}`, {
@@ -296,8 +244,22 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
           title: resumeData.personalInfo.fullName
             ? `${resumeData.personalInfo.fullName}'s Resume`
             : "Untitled Resume",
-          content: resumeData,
-          completeness: calculateCompleteness(resumeData),
+          fullName: data.personalInfo.fullName,
+          jobTitle: data.personalInfo.jobTitle,
+          email: data.personalInfo.email,
+          phone: data.personalInfo.phone,
+          location: data.personalInfo.location,
+          website: data.personalInfo.website,
+          linkedin: data.personalInfo.linkedin,
+          x: data.personalInfo.x,
+          professionalSummary: data.summary,
+          experiences: data.experience,
+          skills: data?.skills,
+          projects: data.projects,
+          educations: data.education,
+          completeness: calculateCompleteness(data),
+          templateId: data.templateId,
+          themeColor: data.themeColor,
         }),
       });
 
@@ -317,20 +279,31 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
       const response = await fetch(`/api/resumes/${id}`);
       if (!response.ok) throw new Error("Failed to load resume");
 
-      const data = await response.json();
-      if (data.content) {
-        // Ensure all arrays exist even if empty in DB
-        const parsedContent =
-          typeof data.content === "string"
-            ? JSON.parse(data.content)
-            : data.content;
+      const data: Resume = await response.json();
+      console.log({ data });
+      if (data) {
+        console.log({ data });
         setResumeData({
           ...defaultResumeData,
-          ...parsedContent,
-          experience: parsedContent.experience || [],
-          education: parsedContent.education || [],
-          skills: parsedContent.skills || [],
-          projects: parsedContent.projects || [],
+          templateId: data.templateId! as unknown as TemplateId,
+          experience: (data.experiences as unknown as WorkExperience[]) || [],
+          education: (data.educations as unknown as Education[]) || [],
+          skills: (data.skills as unknown as Skill[]) || [],
+          personalInfo: {
+            fullName: data.fullName!,
+            email: data.email!,
+            phone: data.phone!,
+            location: data.location!,
+            website: data.website!,
+            linkedin: data.linkedin!,
+            x: data.x!,
+            github: "", // TODO: Work on github linking
+            jobTitle: data.jobTitle!,
+          },
+          themeColor: data.colorTheme!,
+          projects: (data.projects as unknown as Project[]) || [],
+          summary: data.professionalSummary!,
+          title: data.title,
         });
       }
     } catch (error) {

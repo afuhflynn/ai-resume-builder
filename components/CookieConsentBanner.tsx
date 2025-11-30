@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+"use client";
+import { useEffect, useState } from "react";
 
 const CookieConsentBanner = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -6,8 +7,8 @@ const CookieConsentBanner = () => {
 
   useEffect(() => {
     // Check if the user has already consented
-    const consent = localStorage.getItem('cookieConsent');
-    if (consent === 'true') {
+    const consent = localStorage.getItem("cookieConsent");
+    if (consent === "true") {
       setHasConsented(true);
     } else {
       setIsVisible(true);
@@ -16,7 +17,7 @@ const CookieConsentBanner = () => {
 
   const handleAccept = () => {
     // Store the consent in local storage
-    localStorage.setItem('cookieConsent', 'true');
+    localStorage.setItem("cookieConsent", "true");
     setIsVisible(false);
     setHasConsented(true);
   };
@@ -48,4 +49,4 @@ const CookieConsentBanner = () => {
   );
 };
 
-export default CookieConsentBanner;
+export { CookieConsentBanner };

@@ -1,6 +1,12 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "./prisma";
+import { stripe } from "@better-auth/stripe";
+import Stripe from "stripe";
+
+const stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: "2025-11-17.clover", // Latest API version as of Stripe SDK v20.0.0
+});
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -8,7 +14,7 @@ export const auth = betterAuth({
   }),
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: true,
+    // requireEmailVerification: true,
   },
   socialProviders: {
     google: {
@@ -23,6 +29,9 @@ export const auth = betterAuth({
   session: {
     expiresIn: 60 * 60 * 24 * 7, // 7 days
     updateAge: 60 * 60 * 24, // 1 day
+    cookieCache: {
+      maxAge: 30 * 60,
+    },
   },
   // advanced: {
   //   generateId: () => {
@@ -32,4 +41,11 @@ export const auth = betterAuth({
   //   },
   // },
   trustedOrigins: [process.env.BETTER_AUTH_URL!],
+  plugins: [
+    stripe({
+      stripeClient,
+      stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET!,
+      createCustomerOnSignUp: true,
+    }),
+  ],
 });

@@ -15,6 +15,7 @@ import {
   LayoutTemplate,
   Loader2,
   Upload,
+  EyeClosed,
 } from "lucide-react";
 import Link from "next/link";
 import { useResume } from "@/providers/ResumeProvider";
@@ -24,9 +25,14 @@ import { TemplateSelector } from "@/components/resume/templates/TemplateSelector
 import { ColorPicker } from "@/components/resume/templates/ColorPicker";
 import { CoverLetterChat } from "@/components/resume/CoverLetterChat";
 import { ATSOptimizer } from "@/components/resume/ATSOptimizer";
+import { VersionHistory } from "@/components/resume/VersionHistory";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useQueryStates } from "nuqs";
+import { searchParamsSchema } from "@/nuqs";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 export function ResumeBuilder({ id }: { id: string }) {
-  const [activeTab, setActiveTab] = useState("editor");
   const {
     saveResume,
     loadResume,
@@ -37,12 +43,15 @@ export function ResumeBuilder({ id }: { id: string }) {
     updateThemeColor,
     setResumeData,
   } = useResume();
+  const isMobile = useIsMobile();
+  const [params, setParams] = useQueryStates(searchParamsSchema);
+  const { build_tab, build_active_tab, build_ai_tab } = params;
 
   const contentRef = useRef<HTMLDivElement>(null);
   const reactToPrintFn = useReactToPrint({
     contentRef: contentRef,
     documentTitle: resumeData.personalInfo.fullName || "Resume",
-    onAfterPrint: () => console.log("Printed successfully"),
+    onAfterPrint: () => toast.success("Resume downloaded successfully"),
   });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -95,10 +104,41 @@ export function ResumeBuilder({ id }: { id: string }) {
     }
   }, [id]);
 
+  const handleActiveTab = (tab: string) => {
+    setParams({
+      ...params,
+      build_active_tab: tab,
+    });
+  };
+  const handleBuildTab = (tab: string) => {
+    setParams({
+      ...params,
+      build_tab: tab,
+    });
+  };
+
+  const handleAITab = (tab: string) => {
+    setParams({
+      ...params,
+      build_ai_tab: tab,
+    });
+  };
+
   if (isLoading) {
     return (
       <div className="h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (isMobile) {
+    return (
+      <div className="p-4 h-screen flex items-center justify-center">
+        <p className="text-sm text-center">
+          Mobile editor not yet available. Use a device with a larger screen
+          display.
+        </p>
       </div>
     );
   }
@@ -113,7 +153,7 @@ export function ResumeBuilder({ id }: { id: string }) {
         onChange={handleFileChange}
       />
       {/* Header */}
-      <header className="flex items-center justify-between px-6 py-3 border-b bg-card z-10">
+      <header className="flex items-center justify-between px-6 py-3 border-b bg-card z-10 sticky top-0 h-[69px] ">
         <div className="flex items-center gap-4">
           <Link href="/resumes">
             <Button variant="ghost" size="icon">
@@ -123,7 +163,7 @@ export function ResumeBuilder({ id }: { id: string }) {
           <div>
             <h1 className="text-lg font-semibold">Resume Editor</h1>
             <p className="text-xs text-muted-foreground">
-              {isSaving ? "Saving..." : "Ready to edit"}
+              {isSaving ? "Saving..." : resumeData.title || "Untitled"}
             </p>
           </div>
         </div>
@@ -143,14 +183,41 @@ export function ResumeBuilder({ id }: { id: string }) {
             )}
             Import
           </Button>
+          <VersionHistory
+            resumeId={id}
+            onRestore={() => {
+              // Reload the resume after restore
+              if (id && id !== "new") {
+                loadResume(id);
+              }
+            }}
+          />
           <Button variant="outline" size="sm" className="gap-2">
             <LayoutTemplate className="h-4 w-4" />
             Templates
           </Button>
-          <Button variant="outline" size="sm" className="gap-2">
-            <Eye className="h-4 w-4" />
-            Preview
-          </Button>
+          {build_active_tab === "preview" ? (
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 hover:bg-input/50 bg-accent text-accent-foreground"
+              onClick={() => handleActiveTab("editor")}
+            >
+              <EyeClosed className="h-4 w-4" />
+              Editor
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={() => handleActiveTab("preview")}
+            >
+              <Eye className="h-4 w-4" />
+              Preview
+            </Button>
+          )}
+
           <Separator orientation="vertical" className="h-6 mx-2" />
           <Button variant="outline" size="sm" className="gap-2">
             <Share2 className="h-4 w-4" />
@@ -168,7 +235,7 @@ export function ResumeBuilder({ id }: { id: string }) {
           <Button
             size="sm"
             className="gap-2"
-            onClick={() => saveResume(id)}
+            onClick={() => saveResume(id, resumeData)}
             disabled={isSaving}
           >
             {isSaving ? (
@@ -182,39 +249,46 @@ export function ResumeBuilder({ id }: { id: string }) {
       </header>
 
       {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex overflow-hidden h-[calc(100% - 69px)]">
         {/* Left Panel - Editor */}
-        <div className="w-1/2 border-r flex flex-col bg-background">
-          <Tabs defaultValue="content" className="flex-1 flex flex-col">
-            <div className="px-6 py-2 border-b">
-              <TabsList className="w-full justify-start bg-transparent p-0 h-auto gap-6">
-                <TabsTrigger
-                  value="content"
-                  className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 py-2"
-                >
-                  Content
-                </TabsTrigger>
-                <TabsTrigger
-                  value="design"
-                  className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 py-2"
-                >
-                  Design
-                </TabsTrigger>
-                <TabsTrigger
-                  value="ai"
-                  className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 py-2"
-                >
-                  AI Assistant
-                </TabsTrigger>
-              </TabsList>
-            </div>
+        {build_active_tab !== "preview" && (
+          <div className="w-1/2 border-r flex flex-col bg-background h-full ">
+            <Tabs
+              defaultValue={build_tab}
+              onValueChange={(value) => handleBuildTab(value)}
+              className="flex-1 flex flex-col h-full"
+            >
+              <div className="px-6 py-2 border-b h-full sticky top-0 bg-background! z-12">
+                <TabsList className="w-full justify-start p-0 h-auto gap-6 bg-transparent">
+                  <TabsTrigger
+                    value="content"
+                    className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 py-2"
+                  >
+                    Content
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="design"
+                    className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 py-2"
+                  >
+                    Design
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="ai"
+                    className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 py-2"
+                  >
+                    AI Assistant
+                  </TabsTrigger>
+                </TabsList>
+              </div>
 
-            <ScrollArea className="flex-1">
-              <TabsContent value="content" className="m-0 p-0">
-                <ResumeEditor />
-              </TabsContent>
-              <TabsContent value="design" className="m-0 p-6">
-                <div className="flex flex-col gap-8">
+              <ScrollArea className="flex-1 h-full w-full">
+                <TabsContent value="content" className="m-0 p-0">
+                  <ResumeEditor />
+                </TabsContent>
+                <TabsContent
+                  value="design"
+                  className="m-0 p-6 flex flex-col gap-8 h-full w-full"
+                >
                   <TemplateSelector
                     selectedTemplate={resumeData.templateId}
                     onSelect={updateTemplate}
@@ -224,35 +298,51 @@ export function ResumeBuilder({ id }: { id: string }) {
                     selectedColor={resumeData.themeColor}
                     onSelect={updateThemeColor}
                   />
-                </div>
-              </TabsContent>
-              <TabsContent value="ai" className="m-0 p-6">
-                <Tabs defaultValue="cover-letter" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2 mb-6">
-                    <TabsTrigger value="cover-letter">Cover Letter</TabsTrigger>
-                    <TabsTrigger value="ats">ATS Optimization</TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="cover-letter">
-                    <CoverLetterChat />
-                  </TabsContent>
-                  <TabsContent value="ats">
-                    <ATSOptimizer />
-                  </TabsContent>
-                </Tabs>
-              </TabsContent>
-            </ScrollArea>
-          </Tabs>
-        </div>
+                </TabsContent>
+                <TabsContent value="ai" className="m-0 p-6">
+                  <Tabs
+                    defaultValue={build_ai_tab}
+                    onValueChange={(value) => handleAITab(value)}
+                    className="w-full"
+                  >
+                    <TabsList className="grid w-full grid-cols-2 mb-6">
+                      <TabsTrigger value="cover_letter">
+                        Cover Letter
+                      </TabsTrigger>
+                      <TabsTrigger value="ats">ATS Optimization</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="cover_letter">
+                      <CoverLetterChat />
+                    </TabsContent>
+                    <TabsContent value="ats">
+                      <ATSOptimizer />
+                    </TabsContent>
+                  </Tabs>
+                </TabsContent>
+              </ScrollArea>
+            </Tabs>
+          </div>
+        )}
 
         {/* Right Panel - Preview */}
-        <div className="w-1/2 bg-muted/30 flex flex-col">
-          <div className="flex-1 overflow-y-auto p-8 flex justify-center">
-            <div className="w-full max-w-[210mm] origin-top scale-100 transition-transform shadow-2xl">
+        <div
+          className={cn(
+            "w-1/2 bg-muted/30 flex flex-col",
+            build_active_tab === "preview" ? "w-full items-center" : ""
+          )}
+        >
+          <ScrollArea className="flex-1 overflow-y-auto p-8 flex justify-center">
+            <div
+              className={cn(
+                "w-full max-w-[210mm] origin-top scale-100 transition-transform shadow-2xl",
+                build_active_tab === "preview" ? "max-w-[256mm]" : ""
+              )}
+            >
               <div ref={contentRef}>
                 <ResumePreview />
               </div>
             </div>
-          </div>
+          </ScrollArea>
         </div>
       </div>
     </div>

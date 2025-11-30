@@ -34,7 +34,7 @@ export function ResumeEditor() {
   } = useResume();
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-6 h-full overflow-auto">
       <Accordion
         type="multiple"
         defaultValue={[
@@ -245,98 +245,6 @@ export function ResumeEditor() {
           </AccordionContent>
         </AccordionItem>
 
-        {/* Education */}
-        <AccordionItem value="education">
-          <AccordionTrigger>Education</AccordionTrigger>
-          <AccordionContent className="space-y-4">
-            {resumeData.education.map((edu) => (
-              <div
-                key={edu.id}
-                className="border rounded-lg p-4 space-y-4 relative group"
-              >
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-destructive hover:text-destructive hover:bg-destructive/10"
-                  onClick={() => removeEducation(edu.id)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>School</Label>
-                    <Input
-                      value={edu.school}
-                      onChange={(e) =>
-                        updateEducation(edu.id, { school: e.target.value })
-                      }
-                      placeholder="University of Technology"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Degree</Label>
-                    <Input
-                      value={edu.degree}
-                      onChange={(e) =>
-                        updateEducation(edu.id, { degree: e.target.value })
-                      }
-                      placeholder="Bachelor of Science"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Field of Study</Label>
-                    <Input
-                      value={edu.field}
-                      onChange={(e) =>
-                        updateEducation(edu.id, { field: e.target.value })
-                      }
-                      placeholder="Computer Science"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Location</Label>
-                    <Input
-                      value={edu.location}
-                      onChange={(e) =>
-                        updateEducation(edu.id, { location: e.target.value })
-                      }
-                      placeholder="City, Country"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Start Date</Label>
-                    <Input
-                      value={edu.startDate}
-                      onChange={(e) =>
-                        updateEducation(edu.id, { startDate: e.target.value })
-                      }
-                      placeholder="Sep 2016"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>End Date</Label>
-                    <Input
-                      value={edu.endDate}
-                      onChange={(e) =>
-                        updateEducation(edu.id, { endDate: e.target.value })
-                      }
-                      placeholder="May 2020"
-                    />
-                  </div>
-                </div>
-              </div>
-            ))}
-            <Button
-              variant="outline"
-              className="w-full border-dashed"
-              onClick={addEducation}
-            >
-              <Plus className="h-4 w-4 mr-2" /> Add Education
-            </Button>
-          </AccordionContent>
-        </AccordionItem>
-
         {/* Skills */}
         <AccordionItem value="skills">
           <AccordionTrigger>Skills</AccordionTrigger>
@@ -473,6 +381,98 @@ export function ResumeEditor() {
               onClick={addProject}
             >
               <Plus className="h-4 w-4 mr-2" /> Add Project
+            </Button>
+          </AccordionContent>
+        </AccordionItem>
+
+        {/* Education */}
+        <AccordionItem value="education">
+          <AccordionTrigger>Education</AccordionTrigger>
+          <AccordionContent className="space-y-4">
+            {resumeData.education.map((edu) => (
+              <div
+                key={edu.id}
+                className="border rounded-lg p-4 space-y-4 relative group"
+              >
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-destructive hover:text-destructive hover:bg-destructive/10"
+                  onClick={() => removeEducation(edu.id)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>School</Label>
+                    <Input
+                      value={edu.school}
+                      onChange={(e) =>
+                        updateEducation(edu.id, { school: e.target.value })
+                      }
+                      placeholder="University of Technology"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Degree</Label>
+                    <Input
+                      value={edu.degree}
+                      onChange={(e) =>
+                        updateEducation(edu.id, { degree: e.target.value })
+                      }
+                      placeholder="Bachelor of Science"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Field of Study</Label>
+                    <Input
+                      value={edu.field}
+                      onChange={(e) =>
+                        updateEducation(edu.id, { field: e.target.value })
+                      }
+                      placeholder="Computer Science"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Location</Label>
+                    <Input
+                      value={edu.location}
+                      onChange={(e) =>
+                        updateEducation(edu.id, { location: e.target.value })
+                      }
+                      placeholder="City, Country"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Start Date</Label>
+                    <Input
+                      value={edu.startDate}
+                      onChange={(e) =>
+                        updateEducation(edu.id, { startDate: e.target.value })
+                      }
+                      placeholder="Sep 2016"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>End Date</Label>
+                    <Input
+                      value={edu.endDate}
+                      onChange={(e) =>
+                        updateEducation(edu.id, { endDate: e.target.value })
+                      }
+                      placeholder="May 2020"
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+            <Button
+              variant="outline"
+              className="w-full border-dashed"
+              onClick={addEducation}
+            >
+              <Plus className="h-4 w-4 mr-2" /> Add Education
             </Button>
           </AccordionContent>
         </AccordionItem>

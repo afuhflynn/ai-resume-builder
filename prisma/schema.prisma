@@ -1,6 +1,5 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "@prisma/client"
 }
 
 datasource db {
@@ -8,24 +7,38 @@ datasource db {
 }
 
 model User {
-  id               String         @id
+  id               String        @id
   name             String
   email            String
-  emailVerified    Boolean        @default(false)
-  isAdmin          Boolean        @default(false)
+  emailVerified    Boolean       @default(false)
+  isAdmin          Boolean       @default(false)
   image            String?
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
   sessions         Session[]
   accounts         Account[]
-  authProviders    AuthProvider[]
   subscription     Subscription?
   resumes          Resume[]
   aiUsages         AIUsage[]
   activityLogs     ActivityLog[]
   uploadFiles      UploadFile[]
   arcjetEvents     ArcjetEvent[]
-  stripeCustomerId String?        @unique
+  stripeCustomerId String?       @unique
+
+  // personal info
+  fullName  String?
+  phone     String?
+  location  String?
+  website   String?
+  linkedin  String?
+  x         String?
+  instagram String?
+  bio       String?
+  github    String?
+  jobTitle  String?
+  facebook  String?
+  tikTok    String?
+  linkTree  String?
 
   // Fixed Referral Relations
   referralsGiven    Referral[] @relation("ReferrerUser")
@@ -34,8 +47,8 @@ model User {
   teamMemberships TeamMember[]
   couponsUsed     CouponUsage[]
 
-  @@unique([email])
-  @@index([email])
+  @@unique([id])
+  @@index([email, id])
   @@map("user")
 }
 
@@ -85,17 +98,6 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
-}
-
-model AuthProvider {
-  id         String @id @default(cuid())
-  userId     String
-  provider   String
-  providerId String
-  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerId])
-  @@index([userId])
 }
 
 model Subscription {
@@ -160,22 +162,45 @@ model AIUsage {
 }
 
 model Resume {
-  id           String          @id @default(cuid())
-  userId       String
-  title        String
-  content      String          @default("{}")
-  completeness Int             @default(0)
-  isPublic     Boolean         @default(false)
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
-  versions     ResumeVersion[]
-  templateId   String?
-  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  template     ResumeTemplate? @relation(fields: [templateId], references: [id])
-  uploadFiles  UploadFile[]
+  id                  String          @id @default(cuid())
+  userId              String
+  title               String
+  completeness        Int             @default(0)
+  isPublic            Boolean         @default(false)
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+  versions            ResumeVersion[]
+  templateId          String?
+  colorTheme          String?
+  industry            String? // e.g., "Technology", "Healthcare", "Design"
+  regionalStandard    String? // e.g., "US", "CA", "EU", "UK"
+  thumbnailUrl        String? // Generated preview image
+  // Resume content
+  fullName            String?
+  jobTitle            String?
+  email               String?
+  phone               String?
+  location            String?
+  website             String?
+  linkedin            String?
+  x                   String?
+  professionalSummary String?
+  experiences         Json[]
+  skills              Json[]
+  projects            Json[]
+  educations          Json[]
+
+  // completely optional and fancy
+  profile String?
+
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  template    ResumeTemplate? @relation(fields: [templateId], references: [id])
+  uploadFiles UploadFile[]
 
   @@index([userId])
   @@index([templateId])
+  @@index([industry])
+  @@index([regionalStandard])
 }
 
 model ResumeVersion {

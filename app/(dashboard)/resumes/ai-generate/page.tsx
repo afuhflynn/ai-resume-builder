@@ -3,7 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -21,7 +27,9 @@ export default function AiGenerateResumePage() {
   const handleAiGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!resumeTitle.trim() || !jobTitle.trim() || !experience.trim()) {
-      toast.error("Please provide a resume title, desired job title, and your experience.");
+      toast.error(
+        "Please provide a resume title, desired job title, and your experience."
+      );
       return;
     }
 
@@ -54,7 +62,7 @@ export default function AiGenerateResumePage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8 py-8">
+    <div className="max-w-3xl mx-auto space-y-8 py-8 p-4 lg:p-8">
       <div className="flex items-center gap-4">
         <Link href="/dashboard/resumes/create">
           <Button variant="ghost" size="icon">
@@ -62,7 +70,9 @@ export default function AiGenerateResumePage() {
           </Button>
         </Link>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Generate with AI</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Generate with AI
+          </h1>
           <p className="text-muted-foreground">
             Let our AI craft a professional resume for you.
           </p>
@@ -121,10 +131,20 @@ export default function AiGenerateResumePage() {
                 Summarize your relevant experience, skills, and achievements.
               </p>
             </div>
-            <Button type="submit" className="w-full" disabled={isLoading || !resumeTitle.trim() || !jobTitle.trim() || !experience.trim()}>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={
+                isLoading ||
+                !resumeTitle.trim() ||
+                !jobTitle.trim() ||
+                !experience.trim()
+              }
+            >
               {isLoading ? (
                 <>
-                  <Sparkles className="mr-2 h-4 w-4 animate-pulse" /> Generating...
+                  <Sparkles className="mr-2 h-4 w-4 animate-pulse" />{" "}
+                  Generating...
                 </>
               ) : (
                 <>

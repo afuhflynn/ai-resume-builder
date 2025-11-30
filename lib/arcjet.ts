@@ -6,7 +6,7 @@ export const aj = arcjet({
     shield({ mode: "LIVE" }),
     detectBot({
       mode: "LIVE",
-      allow: ["CATEGORY:SEARCH_ENGINE"],
+      allow: ["CATEGORY:SEARCH_ENGINE", "CATEGORY:MONITOR", "CATEGORY:VERCEL"],
     }),
   ],
 });
@@ -16,6 +16,7 @@ export const ajRateLimit = arcjet({
   rules: [
     tokenBucket({
       mode: "LIVE",
+      characteristics: ["userId"],
       refillRate: 10,
       interval: 60,
       capacity: 100,
@@ -28,6 +29,7 @@ export const ajAuth = arcjet({
   rules: [
     tokenBucket({
       mode: "LIVE",
+      characteristics: ["userId"],
       refillRate: 5,
       interval: 60,
       capacity: 20,
