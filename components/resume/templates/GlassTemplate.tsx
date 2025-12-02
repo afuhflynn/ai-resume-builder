@@ -1,12 +1,25 @@
-import { ResumeData } from "@/providers/ResumeProvider";
+import { cn } from "@/lib/utils";
 import { Mail, Phone, MapPin, Linkedin, Globe } from "lucide-react";
 
-export function GlassTemplate({ data }: { data: ResumeData }) {
+export function GlassTemplate({
+  data,
+  template,
+}: {
+  data: ResumeData;
+  template: ResumeTemplate | null;
+}) {
   const { personalInfo, summary, experience, education, skills, themeColor } =
     data;
+  console.log({ template });
 
   return (
-    <div className="w-full h-full min-h-[297mm] relative bg-slate-50 text-slate-800 font-sans overflow-hidden">
+    <div
+      className="w-full h-full min-h-[297mm] relative overflow-hidden"
+      style={{
+        fontFamily: template?.designJson.fonts.body,
+        backgroundColor: "white",
+      }}
+    >
       {/* Background Elements */}
       <div
         className="absolute top-0 left-0 w-full h-64"
@@ -14,13 +27,18 @@ export function GlassTemplate({ data }: { data: ResumeData }) {
           background: `linear-gradient(135deg, ${themeColor} 0%, ${themeColor}dd 100%)`,
         }}
       />
-      <div className="absolute top-40 right-[-50px] w-64 h-64 rounded-full bg-white/10 blur-3xl" />
-      <div className="absolute top-10 left-[-50px] w-40 h-40 rounded-full bg-white/10 blur-2xl" />
 
       <div className="relative z-10 p-8 md:p-12 flex flex-col gap-6">
         {/* Header Card */}
-        <div className="backdrop-blur-md bg-white/30 border border-white/40 rounded-2xl p-8 shadow-xl">
-          <h1 className="text-4xl font-bold text-white mb-2 tracking-tight">
+        <div
+          className={cn(
+            "backdrop-blur-md bg-white/30 border border-white/40 rounded-2xl p-8 shadow-xl"
+          )}
+        >
+          <h1
+            className="text-4xl font-bold text-white mb-2 tracking-tight"
+            style={{ fontFamily: template?.designJson.fonts.heading }}
+          >
             {personalInfo.fullName}
           </h1>
           <p className="text-xl text-white/90 font-medium mb-6">

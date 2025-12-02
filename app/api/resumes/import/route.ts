@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     if (!title || title.trim().length === 0) {
       return NextResponse.json(
         { error: "Resume title is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
     if (!validTypes.includes(file.type)) {
       return NextResponse.json(
         { error: "Invalid file type. Only PDF, DOCX, and TXT are supported." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -53,13 +53,10 @@ export async function POST(req: NextRequest) {
     // Extract text
     const text = await extractTextFromFile(buffer, file.type);
 
-    console.log({ text });
-    return NextResponse.json({ message: "Great" });
-
     if (!text || text.trim().length === 0) {
       return NextResponse.json(
         { error: "Could not extract text from file" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -69,12 +66,12 @@ export async function POST(req: NextRequest) {
       fileSize: file.size,
     });
 
-    if (!creditResult.success) {
-      return NextResponse.json(
-        { error: creditResult.error, remaining: creditResult.remaining },
-        { status: 402 } // Payment Required
-      );
-    }
+    // if (!creditResult.success) {
+    //   return NextResponse.json(
+    //     { error: creditResult.error, remaining: creditResult.remaining },
+    //     { status: 402 }, // Payment Required
+    //   );
+    // }
 
     // Parse with AI
     const resumeData = await parseResumeFromText(text);
@@ -84,20 +81,34 @@ export async function POST(req: NextRequest) {
       data: {
         userId: session.user.id,
         title: title,
-        content: JSON.stringify(resumeData), // Store the parsed content
-        completeness: 0, // Initial completeness, can be updated later
+        colorTheme: "#0f172a", // Default to Slate-900 (Professional theme primary)
+        industry: null,
+        regionalStandard: null,
+        email: session.user.email,
+        fullName: resumeData.personalInfo.fullName || session.user.name,
+        profile: session.user.image,
+        phone: resumeData.personalInfo.phone,
+        location: resumeData.personalInfo.location!,
+        website: resumeData.personalInfo.website!,
+        linkedin: resumeData.personalInfo.linkedin!,
+        professionalSummary: resumeData.summary,
+        completeness: resumeData.completeness,
+        experiences: resumeData.experience!,
+        educations: resumeData.education,
+        skills: resumeData.skills,
+        projects: resumeData.projects,
       },
     });
 
     return NextResponse.json({
       resumeId: newResume.id, // Return the ID of the new resume
-      creditsRemaining: creditResult.remaining,
+      // creditsRemaining: creditResult.remaining,
     });
   } catch (error) {
     console.error("Resume import error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

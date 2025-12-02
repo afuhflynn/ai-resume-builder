@@ -11,6 +11,7 @@ const publicPaths = [
   "/privacy",
   "/api/auth",
   "/api/stripe/webhook",
+  "/api/seed/templates",
 ];
 const authPaths = ["/login", "/signup", "/reset-password"];
 

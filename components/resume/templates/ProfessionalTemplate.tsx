@@ -1,7 +1,12 @@
-import { ResumeData } from "@/providers/ResumeProvider";
 import { Mail, Phone, MapPin, Linkedin, Globe } from "lucide-react";
 
-export function ProfessionalTemplate({ data }: { data: ResumeData }) {
+export function ProfessionalTemplate({
+  data,
+  template,
+}: {
+  data: ResumeData;
+  template: ResumeTemplate | null;
+}) {
   const {
     personalInfo,
     summary,
@@ -13,12 +18,21 @@ export function ProfessionalTemplate({ data }: { data: ResumeData }) {
   } = data;
 
   return (
-    <div className="w-full h-full min-h-[297mm] bg-white text-slate-900 font-serif p-10 md:p-14">
+    <div
+      className="w-full h-full min-h-[297mm] bg-white text-slate-900 font-serif p-10 md:p-14"
+      style={{
+        fontFamily: template?.designJson.fonts.body,
+        backgroundColor: template?.designJson.colors.background,
+      }}
+    >
       {/* Header */}
       <div className="border-b-2 pb-6 mb-8" style={{ borderColor: themeColor }}>
         <h1
           className="text-4xl font-bold uppercase tracking-wider mb-2"
-          style={{ color: themeColor }}
+          style={{
+            color: themeColor,
+            fontFamily: template?.designJson.fonts.heading,
+          }}
         >
           {personalInfo.fullName}
         </h1>

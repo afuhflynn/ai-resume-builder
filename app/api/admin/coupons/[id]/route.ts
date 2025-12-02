@@ -7,7 +7,11 @@ import { z } from "zod";
 
 // Schema for updating an existing coupon
 const updateCouponSchema = z.object({
-  code: z.string().min(3, "Coupon code must be at least 3 characters long").max(50).optional(),
+  code: z
+    .string()
+    .min(3, "Coupon code must be at least 3 characters long")
+    .max(50)
+    .optional(),
   type: z.enum(["PERCENTAGE", "FIXED", "FREE_TRIAL"]).optional(),
   value: z.number().int().min(0, "Value cannot be negative").optional(), // Percentage (0-100) or fixed amount in cents
   maxUses: z.number().int().min(1, "Max uses must be at least 1").optional(),
@@ -17,7 +21,7 @@ const updateCouponSchema = z.object({
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth.api.getSession({
@@ -39,7 +43,9 @@ export async function PUT(
         type: validatedData.type,
         value: validatedData.value,
         maxUses: validatedData.maxUses,
-        expiresAt: validatedData.expiresAt ? new Date(validatedData.expiresAt) : null,
+        expiresAt: validatedData.expiresAt
+          ? new Date(validatedData.expiresAt)
+          : null,
         isActive: validatedData.isActive,
       },
     });
@@ -49,20 +55,21 @@ export async function PUT(
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.issues }, { status: 400 });
     }
-    if (error.code === "P2025") { // Prisma error for record not found
+    if (error.code === "P2025") {
+      // Prisma error for record not found
       return NextResponse.json({ error: "Coupon not found" }, { status: 404 });
     }
     console.error("Admin coupons PUT error:", error);
     return NextResponse.json(
       { error: "Failed to update coupon" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth.api.getSession({
@@ -79,15 +86,19 @@ export async function DELETE(
       where: { id },
     });
 
-    return NextResponse.json({ message: "Coupon deleted successfully" }, { status: 200 });
+    return NextResponse.json(
+      { message: "Coupon deleted successfully" },
+      { status: 200 }
+    );
   } catch (error: any) {
-    if (error.code === "P2025") { // Prisma error for record not found
+    if (error.code === "P2025") {
+      // Prisma error for record not found
       return NextResponse.json({ error: "Coupon not found" }, { status: 404 });
     }
     console.error("Admin coupons DELETE error:", error);
     return NextResponse.json(
       { error: "Failed to delete coupon" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

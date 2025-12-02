@@ -16,6 +16,7 @@ import {
   Loader2,
   Upload,
   EyeClosed,
+  RefreshCw,
 } from "lucide-react";
 import Link from "next/link";
 import { useResume } from "@/providers/ResumeProvider";
@@ -42,6 +43,9 @@ export function ResumeBuilder({ id }: { id: string }) {
     updateTemplate,
     updateThemeColor,
     setResumeData,
+    downloadPDF, // NEW
+    regenerateAssets, // NEW
+    isGeneratingAssets, // NEW
   } = useResume();
   const isMobile = useIsMobile();
   const [params, setParams] = useQueryStates(searchParamsSchema);
@@ -56,6 +60,26 @@ export function ResumeBuilder({ id }: { id: string }) {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImporting, setIsImporting] = useState(false);
+
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  // Remove the old reactToPrintFn and replace with this:
+  const handleDownloadPDF = async () => {
+    await downloadPDF(id);
+  };
+
+  // Update the save button handler:
+  const handleSave = async () => {
+    const savedResume = await saveResume(id, resumeData);
+
+    // Optional: If you want to show asset generation status
+    if (savedResume && savedResume.id) {
+      toast.info("Generating PDF and thumbnail...", {
+        description: "This may take a few seconds",
+        duration: 3000,
+      });
+    }
+  };
 
   const handleImportClick = () => {
     fileInputRef.current?.click();
@@ -227,15 +251,34 @@ export function ResumeBuilder({ id }: { id: string }) {
             variant="outline"
             size="sm"
             className="gap-2"
-            onClick={() => reactToPrintFn()}
+            onClick={handleDownloadPDF}
+            disabled={isDownloading || id === "new"}
           >
-            <Download className="h-4 w-4" />
+            {isDownloading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Download className="h-4 w-4" />
+            )}
             Download PDF
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={() => regenerateAssets(id)}
+            disabled={id === "new" || isGeneratingAssets}
+          >
+            {isGeneratingAssets ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4" />
+            )}
+            Regenerate
           </Button>
           <Button
             size="sm"
             className="gap-2"
-            onClick={() => saveResume(id, resumeData)}
+            onClick={handleSave}
             disabled={isSaving}
           >
             {isSaving ? (
@@ -292,6 +335,7 @@ export function ResumeBuilder({ id }: { id: string }) {
                   <TemplateSelector
                     selectedTemplate={resumeData.templateId}
                     onSelect={updateTemplate}
+                    className="sm:max-w-[calc(1/2 * (100% - 40%))]"
                   />
                   <Separator />
                   <ColorPicker
@@ -327,14 +371,14 @@ export function ResumeBuilder({ id }: { id: string }) {
         {/* Right Panel - Preview */}
         <div
           className={cn(
-            "w-1/2 bg-muted/30 flex flex-col",
-            build_active_tab === "preview" ? "w-full items-center" : ""
+            "w-1/2 bg-muted/30 flex flex-col items-center",
+            build_active_tab === "preview" ? "w-full" : ""
           )}
         >
           <ScrollArea className="flex-1 overflow-y-auto p-8 flex justify-center">
             <div
               className={cn(
-                "w-full max-w-[210mm] origin-top scale-100 transition-transform shadow-2xl",
+                "w-full origin-top scale-100 transition-transform shadow-2xl",
                 build_active_tab === "preview" ? "max-w-[256mm]" : ""
               )}
             >

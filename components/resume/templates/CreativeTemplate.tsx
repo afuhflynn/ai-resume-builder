@@ -1,12 +1,23 @@
-import { ResumeData } from "@/providers/ResumeProvider";
 import { Mail, Phone, MapPin, Linkedin, Globe } from "lucide-react";
 
-export function CreativeTemplate({ data }: { data: ResumeData }) {
+export function CreativeTemplate({
+  data,
+  template,
+}: {
+  data: ResumeData;
+  template: ResumeTemplate | null;
+}) {
   const { personalInfo, summary, experience, education, skills, themeColor } =
     data;
 
   return (
-    <div className="w-full h-full min-h-[297mm] bg-white text-slate-800 font-sans flex">
+    <div
+      className="w-full h-full min-h-[297mm] bg-white text-slate-800 font-sans flex"
+      style={{
+        fontFamily: template?.designJson.fonts.body,
+        backgroundColor: template?.designJson.colors.background,
+      }}
+    >
       {/* Sidebar */}
       <div
         className="w-1/3 text-white p-8 flex flex-col gap-8"
@@ -16,7 +27,13 @@ export function CreativeTemplate({ data }: { data: ResumeData }) {
           <div className="w-32 h-32 rounded-full bg-white/20 mx-auto mb-4 flex items-center justify-center text-4xl font-bold">
             {personalInfo.fullName.charAt(0)}
           </div>
-          <h1 className="text-2xl font-bold text-center leading-tight">
+          <h1
+            className="text-2xl font-bold text-center leading-tight"
+            style={{
+              color: themeColor,
+              fontFamily: template?.designJson.fonts.heading,
+            }}
+          >
             {personalInfo.fullName}
           </h1>
           <p className="text-center text-white/80 font-medium uppercase tracking-widest text-sm">

@@ -9,6 +9,7 @@ import { toast } from "sonner";
 interface TemplateSelectorProps {
   selectedTemplate: string | null | undefined;
   onSelect: (templateId: string) => void;
+  className?: string;
 }
 
 interface Template {
@@ -22,6 +23,7 @@ interface Template {
 export function TemplateSelector({
   selectedTemplate,
   onSelect,
+  className,
 }: TemplateSelectorProps) {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -56,16 +58,16 @@ export function TemplateSelector({
   }
 
   return (
-    <div className="w-full overflow-hidden py-4">
+    <div className={cn("w-full overflow-hidden py-4 ", className)}>
       <h3 className="text-sm font-medium mb-3">Choose Template</h3>
-      <ScrollArea className="w-full whitespace-nowrap rounded-md border overflow-auto">
+      <ScrollArea className="w-full whitespace-nowrap rounded-md border overflow-auto max-w-full">
         <div className="flex w-full overflow-hidden space-x-4 p-4">
           {templates.map((template) => (
             <div key={template.id} className="relative group">
               <button
                 onClick={() => onSelect(template.id)}
                 className={cn(
-                  "relative overflow-hidden rounded-lg border-2 transition-all hover:border-primary w-[120px] h-[160px] group",
+                  "relative overflow-hidden rounded-lg border-2 transition-all hover:border-primary w-[120px] h-40 group",
                   selectedTemplate === template.id
                     ? "border-primary ring-2 ring-primary ring-offset-2"
                     : "border-transparent"

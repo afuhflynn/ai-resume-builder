@@ -11,6 +11,7 @@ export async function GET() {
         name: true,
         description: true,
         thumbnail: true,
+        designJson: true,
         isPremium: true,
       },
     });

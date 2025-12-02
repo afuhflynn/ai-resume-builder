@@ -1,6 +1,12 @@
 import { Mail, Phone, MapPin, Linkedin, Globe } from "lucide-react";
 
-export function MinimalistTemplate({ data }: { data: ResumeData }) {
+export function MinimalistTemplate({
+  data,
+  template,
+}: {
+  data: ResumeData;
+  template: ResumeTemplate | null;
+}) {
   const {
     personalInfo,
     summary,
@@ -12,10 +18,19 @@ export function MinimalistTemplate({ data }: { data: ResumeData }) {
   } = data;
 
   return (
-    <div className="w-full h-full min-h-[297mm] bg-white text-slate-900 font-sans p-12">
+    <div
+      className="w-full h-full min-h-[297mm] bg-white text-slate-900 font-sans p-12"
+      style={{
+        fontFamily: template?.designJson.fonts.body,
+        backgroundColor: template?.designJson.colors.background,
+      }}
+    >
       {/* Header */}
       <header className="mb-12">
-        <h1 className="text-5xl font-light tracking-tight mb-4 text-slate-900">
+        <h1
+          className="text-5xl font-light tracking-tight mb-4 text-slate-900"
+          style={{ fontFamily: template?.designJson.fonts.heading }}
+        >
           {personalInfo.fullName}
         </h1>
         <p className="text-xl text-slate-500 font-light mb-6 tracking-wide uppercase">

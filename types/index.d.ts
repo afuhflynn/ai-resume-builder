@@ -62,6 +62,8 @@ interface Education {
 interface ResumeData {
   templateId: TemplateId;
   themeColor: string;
+  industry: string | null;
+  regionalStandard: string | null;
   personalInfo: PersonalInfo;
   summary: string;
   experience: WorkExperience[];
@@ -69,4 +71,99 @@ interface ResumeData {
   skills: Skill[];
   projects: Project[];
   title: string;
+  template?: ResumeTemplate;
+}
+
+interface ResumeTemplate {
+  id: string;
+  name: string;
+  description: string;
+  designJson: DesignJson;
+  thumbnail: string;
+  isPremium: boolean;
+  isActive: boolean;
+}
+
+interface DesignJson {
+  layout: string;
+  colors: {
+    primary: string;
+    secondary: string;
+    accent: string;
+    background: string;
+    text: string;
+  };
+  fonts: {
+    heading: string;
+    body: string;
+    headingWeight: string;
+    bodyWeight: string;
+  };
+  spacing: {
+    margin: string;
+    lineHeight: string;
+    sectionGap: string;
+  };
+  style: {
+    headerStyle: string;
+    sectionHeaders: string;
+    bulletStyle: string;
+    borderRadius: string;
+  };
+  sampleData: SampleData;
+}
+
+interface SampleData {
+  personalInfo: {
+    fullName: string;
+    jobTitle: string;
+    email: string;
+    phone: string;
+    location: string;
+    linkedin: string;
+    website: string;
+    x: string;
+  };
+  summary: string;
+  experience: ExperienceItem[];
+  education: EducationItem[];
+  skills: SkillItem[];
+  projects: ProjectItem[];
+}
+
+interface ExperienceItem {
+  id: string;
+  company: string;
+  position: string;
+  location: string;
+  startDate: string;
+  endDate: string;
+  current: boolean;
+  description: string;
+}
+
+interface EducationItem {
+  id: string;
+  school: string;
+  degree: string;
+  field: string;
+  location: string;
+  startDate: string;
+  endDate: string;
+  current: boolean;
+  description: string;
+}
+
+interface SkillItem {
+  id: string;
+  name: string;
+  level: string;
+}
+
+interface ProjectItem {
+  id: string;
+  name: string;
+  description: string;
+  url: string;
+  technologies: string[];
 }

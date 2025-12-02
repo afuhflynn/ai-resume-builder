@@ -105,22 +105,6 @@ export default function CreateResumePage() {
           templateId: selectedTemplate,
           industry: selectedIndustry || null,
           regionalStandard: selectedRegional || null,
-          content: {
-            personalInfo: {
-              fullName: "",
-              email: "",
-              phone: "",
-              location: "",
-              website: "",
-              linkedin: "",
-              jobTitle: "",
-            },
-            summary: "",
-            experience: [],
-            education: [],
-            skills: [],
-            projects: [],
-          },
         }),
       });
 
@@ -158,28 +142,16 @@ export default function CreateResumePage() {
         body: JSON.stringify({
           jobTitle: jobTitle.trim(),
           experience: experience.trim(),
+          title,
         }),
       });
 
       if (!aiResponse.ok) throw new Error("Failed to generate resume with AI");
 
-      const { data: aiContent } = await aiResponse.json();
+      const data = await aiResponse.json();
 
-      // Then create the resume with the AI-generated content
-      const createResponse = await fetch("/api/resumes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: title.trim(),
-          content: aiContent,
-        }),
-      });
-
-      if (!createResponse.ok) throw new Error("Failed to save resume");
-
-      const resume = await createResponse.json();
       toast.success("Resume generated with AI!");
-      router.push(`/editor/${resume.id}`);
+      router.push(`/editor/${data.resumeId}`);
     } catch (error) {
       console.error("Error generating resume:", error);
       toast.error("Failed to generate resume with AI");
@@ -485,6 +457,7 @@ export default function CreateResumePage() {
             <TemplateSelector
               selectedTemplate={selectedTemplate}
               onSelect={setSelectedTemplate}
+              className="sm:max-w-[640px]"
             />
           </div>
 

@@ -11,26 +11,24 @@ const posthogClient = new PostHog(
   process.env.NEXT_PUBLIC_POSTHOG_KEY as string,
   {
     host: process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://app.posthog.com",
-  }
+  },
 );
 
 export async function POST(req: NextRequest) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const requestBody = await req.json();
+  const { jobTitle, experience, title } = requestBody;
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const requestBody = await req.json();
-    const { jobTitle, experience, title } = requestBody;
-
     if (!jobTitle || !experience || !title) {
       return NextResponse.json(
         { error: "Missing job title, experience, or resume title" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -38,15 +36,15 @@ export async function POST(req: NextRequest) {
     const creditResult = await deductCredits(
       session.user.id,
       "GENERATE_RESUME",
-      { jobTitle, experience: experience.substring(0, 100) } // Log only a part of experience
+      { jobTitle, experience: experience.substring(0, 100) }, // Log only a part of experience
     );
 
-    if (!creditResult.success) {
-      return NextResponse.json(
-        { error: creditResult.error, remaining: creditResult.remaining },
-        { status: 402 } // Payment Required
-      );
-    }
+    // if (!creditResult.success) {
+    //   return NextResponse.json(
+    //     { error: creditResult.error, remaining: creditResult.remaining },
+    //     { status: 402 } // Payment Required
+    //   );
+    // }
 
     // Pass jobTitle and experience to generateResume
     const resumeContent = await generateResume({ jobTitle, experience });
@@ -56,8 +54,24 @@ export async function POST(req: NextRequest) {
       data: {
         userId: session.user.id,
         title: title,
-        content: JSON.stringify(resumeContent), // Store the generated content
-        completeness: 0, // Initial completeness, can be updated later
+        jobTitle: jobTitle,
+
+        colorTheme: "#0f172a", // Default to Slate-900 (Professional theme primary)
+        industry: null,
+        regionalStandard: null,
+        email: session.user.email,
+        fullName: resumeContent.personalInfo.fullName || session.user.name,
+        profile: session.user.image,
+        phone: resumeContent.personalInfo.phone,
+        location: resumeContent.personalInfo.location!,
+        website: resumeContent.personalInfo.website!,
+        linkedin: resumeContent.personalInfo.linkedin!,
+        professionalSummary: resumeContent.summary,
+        completeness: resumeContent.completeness,
+        experiences: resumeContent.experience!,
+        educations: resumeContent.education,
+        skills: resumeContent.skills,
+        projects: resumeContent.projects,
       },
     });
 
@@ -70,13 +84,13 @@ export async function POST(req: NextRequest) {
         jobTitle,
         title,
         creditsUsed: 50, // Assuming 50 credits per generation based on tasks.md
-        creditsRemaining: creditResult.remaining,
+        // creditsRemaining: creditResult.remaining,
       },
     });
 
     return NextResponse.json({
       resumeId: newResume.id, // Return the ID of the new resume
-      creditsRemaining: creditResult.remaining,
+      // creditsRemaining: creditResult.remaining,
     });
   } catch (error) {
     console.error("AI Resume Generation API error:", error);
@@ -105,7 +119,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(
       { error: "Internal server error during AI resume generation" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

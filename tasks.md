@@ -527,3 +527,16 @@ pnpm add @sentry/nextjs
   2280 |       });
   2281 |   }
  POST /api/resumes/import 500 in 3.2s (compile: 2.7s, proxy.ts: 9ms, render: 438ms)`
+
+
+[] Ensure that all pdfs are generated and preview uses: import {
+  Document,
+  Page,
+  Text,
+  View,
+  StyleSheet,
+  pdf,
+  Link,
+} from "@react-pdf/renderer";
+
+[] Conert the codebase from react context store to zustand store.

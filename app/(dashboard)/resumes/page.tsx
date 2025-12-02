@@ -50,6 +50,7 @@ interface Resume {
   title: string;
   updatedAt: string;
   completeness: number;
+  thumbnailUrl?: string | null;
   template?: {
     thumbnail: string | null;
   };
@@ -185,7 +186,11 @@ export default function ResumesPage() {
               <CardContent className="flex-1">
                 <div className="aspect-210/297 w-full bg-muted rounded-md flex items-center justify-center mb-4 border overflow-hidden relative">
                   <Image
-                    src={resume.template?.thumbnail || "/place-holder.png"}
+                    src={
+                      resume.thumbnailUrl ||
+                      resume.template?.thumbnail ||
+                      "/place-holder.png"
+                    }
                     alt={resume.title}
                     height={377.02}
                     width={266}

@@ -1,16 +1,31 @@
 import { Mail, Phone, MapPin, Linkedin, Globe } from "lucide-react";
 
-export function ModernTemplate({ data }: { data: ResumeData }) {
+export function ModernTemplate({
+  data,
+  template,
+}: {
+  data: ResumeData;
+  template: ResumeTemplate | null;
+}) {
   const { personalInfo, summary, experience, education, skills, themeColor } =
     data;
 
   return (
-    <div className="w-full h-full min-h-[297mm] bg-white text-slate-900 font-sans p-8 md:p-12">
+    <div
+      className="w-full h-full min-h-[297mm] bg-white text-slate-900 font-sans p-8 md:p-12"
+      style={{
+        fontFamily: template?.designJson.fonts.body,
+        backgroundColor: template?.designJson.colors.background,
+      }}
+    >
       {/* Header */}
       <div className="p-8 px-0">
         <h1
           className="text-4xl font-bold  mb-2 tracking-tight uppercase"
-          style={{ color: themeColor }}
+          style={{
+            color: themeColor,
+            fontFamily: template?.designJson.fonts.heading,
+          }}
         >
           {personalInfo.fullName}
         </h1>

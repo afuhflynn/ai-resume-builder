@@ -26,7 +26,7 @@ const resumeSchema = z.object({
         current: z.boolean().default(false),
         location: z.string().default(""),
         description: z.string().default(""),
-      })
+      }),
     )
     .default([]),
   education: z
@@ -41,7 +41,7 @@ const resumeSchema = z.object({
         current: z.boolean().default(false),
         location: z.string().default(""),
         description: z.string().default(""),
-      })
+      }),
     )
     .default([]),
   skills: z
@@ -52,9 +52,10 @@ const resumeSchema = z.object({
         level: z
           .enum(["Beginner", "Intermediate", "Advanced", "Expert"])
           .default("Intermediate"),
-      })
+      }),
     )
     .default([]),
+  completeness: z.number().default(0),
   projects: z
     .array(
       z.object({
@@ -63,7 +64,7 @@ const resumeSchema = z.object({
         description: z.string().default(""),
         url: z.string().default(""),
         technologies: z.array(z.string()).default([]),
-      })
+      }),
     )
     .default([]),
 });
@@ -76,7 +77,7 @@ export async function generateResume({
   experience: string;
 }) {
   const { object } = await generateObject({
-    model: google("gemini-1.5-pro"),
+    model: google("gemini-2.5-flash-lite"),
     schema: resumeSchema,
     prompt: `Generate a professional resume based on the following information:
 
@@ -120,10 +121,10 @@ export async function generateResume({
 
 export async function improveResumeSection(
   section: string,
-  tone: "professional" | "casual" | "technical" = "professional"
+  tone: "professional" | "casual" | "technical" = "professional",
 ) {
   const { text } = await generateText({
-    model: google("gemini-1.5-pro"),
+    model: google("gemini-2.5-flash-lite"),
     prompt: `Improve this resume section with a ${tone} tone. Make it more impactful, clear, and ATS-friendly:
 
 ${section}
@@ -137,7 +138,7 @@ Provide only the improved version without explanations.`,
 export async function generateCoverLetter(
   jobDescription: string,
   resume: string,
-  tone: "professional" | "enthusiastic" | "formal" = "professional"
+  tone: "professional" | "enthusiastic" | "formal" = "professional",
 ) {
   const { text } = await generateText({
     model: google("gemini-1.5-flash"), // Fixed model name
@@ -159,7 +160,7 @@ Create a personalized, engaging cover letter that highlights relevant experience
 
 export async function optimizeForATS(resumeText: string) {
   const { text } = await generateText({
-    model: google("gemini-1.5-pro"),
+    model: google("gemini-2.5-flash-lite"),
     prompt: `Analyze this resume for ATS optimization and provide:
 1. ATS score (0-100)
 2. Missing keywords
@@ -175,7 +176,7 @@ ${resumeText}`,
 
 export function streamResumeImprovement(section: string) {
   return streamText({
-    model: google("gemini-1.5-pro"),
+    model: google("gemini-2.5-flash-lite"),
     prompt: `Improve this resume section in real-time, making it more impactful:
 
 ${section}`,
@@ -184,12 +185,14 @@ ${section}`,
 
 export async function parseResumeFromText(text: string) {
   const { object } = await generateObject({
-    model: google("gemini-1.5-pro"),
+    model: google("gemini-2.5-flash-lite"),
     schema: resumeSchema,
     prompt: `Extract structured resume data from the following text.
     Map the content to the schema fields.
     For dates, use "MM/YYYY" format or "Present".
     If a field is missing, leave it empty.
+
+    NOTE: The resume completeness must be a value from (0 to 100) in percentage.
 
     Resume Text:
     ${text}`,

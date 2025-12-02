@@ -20,6 +20,9 @@ export async function GET(
     const { id } = await params;
     const resume = await prisma.resume.findUnique({
       where: { id },
+      include: {
+        template: true,
+      },
     });
 
     if (!resume) {
@@ -133,6 +136,38 @@ export async function PUT(
         colorTheme: themeColor,
       },
     });
+
+    // Check if template changed and regenerate thumbnail if needed
+    const {
+      shouldRegenerateThumbnail,
+      generateResumeThumbnail,
+      deleteOldThumbnail,
+    } = await import("@/lib/thumbnail");
+
+    if (
+      shouldRegenerateThumbnail(
+        existingResume.thumbnailUrl,
+        existingResume.templateId,
+        templateId
+      )
+    ) {
+      // Delete old thumbnail
+      deleteOldThumbnail(existingResume.thumbnailUrl).catch(console.error);
+
+      // Generate new thumbnail asynchronously
+      generateResumeThumbnail(id, templateId, {
+        personalInfo: { fullName },
+      })
+        .then(async (thumbnailUrl) => {
+          await prisma.resume.update({
+            where: { id },
+            data: { thumbnailUrl },
+          });
+        })
+        .catch((error) => {
+          console.error("Failed to generate thumbnail:", error);
+        });
+    }
 
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
