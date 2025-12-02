@@ -44,6 +44,11 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { ResumesLoading } from "@/components/loading/resumes-loading";
+import { useSession } from "@/lib/auth-client";
+import { useDeleteResume, useResumes } from "@/hooks";
+import { useQueryStates } from "nuqs";
+import { searchParamsSchema } from "@/nuqs";
 
 interface Resume {
   id: string;
@@ -57,53 +62,24 @@ interface Resume {
 }
 
 export default function ResumesPage() {
-  const [resumes, setResumes] = useState<Resume[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [resumeToDelete, setResumeToDelete] = useState<string | null>(null);
   const router = useRouter();
+  const [params, setParams] = useQueryStates(searchParamsSchema);
 
-  useEffect(() => {
-    fetchResumes();
-  }, []);
+  const page = Number(params.page);
+  const limit = Number(params.limit);
 
-  const fetchResumes = async () => {
-    try {
-      const response = await fetch("/api/resumes");
-      if (!response.ok) throw new Error("Failed to fetch resumes");
-      const data = await response.json();
-      setResumes(data);
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to load resumes");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { data, isPending: isLoading } = useResumes(page, limit);
+  const resumes = data?.data;
 
-  const handleDelete = async () => {
-    if (!resumeToDelete) return;
+  const { mutate: deleteResume } = useDeleteResume({ page, limit });
 
-    try {
-      const response = await fetch(`/api/resumes/${resumeToDelete}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) throw new Error("Failed to delete resume");
-
-      setResumes(resumes.filter((r) => r.id !== resumeToDelete));
-      toast.success("Resume deleted");
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to delete resume");
-    } finally {
-      setResumeToDelete(null);
-    }
-  };
-
-  const filteredResumes = resumes.filter((resume) =>
-    resume.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredResumes =
+    resumes &&
+    resumes.filter((resume) =>
+      resume.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
   return (
     <div className="space-y-8 p-4 lg:p-8">
@@ -136,10 +112,8 @@ export default function ResumesPage() {
       </div>
 
       {isLoading ? (
-        <div className="flex justify-center py-20">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      ) : filteredResumes.length > 0 ? (
+        <ResumesLoading />
+      ) : filteredResumes && filteredResumes.length > 0 ? (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredResumes.map((resume) => (
             <Card
@@ -186,11 +160,7 @@ export default function ResumesPage() {
               <CardContent className="flex-1">
                 <div className="aspect-210/297 w-full bg-muted rounded-md flex items-center justify-center mb-4 border overflow-hidden relative">
                   <Image
-                    src={
-                      resume.thumbnailUrl ||
-                      resume.template?.thumbnail ||
-                      "/place-holder.png"
-                    }
+                    src={resume.thumbnailUrl!}
                     alt={resume.title}
                     height={377.02}
                     width={266}
@@ -247,6 +217,30 @@ export default function ResumesPage() {
         </div>
       )}
 
+      {data && (
+        <div className="flex items-center justify-between pt-4">
+          <Button
+            variant="outline"
+            disabled={page <= 1}
+            onClick={() => setParams({ page: String(page - 1) })}
+          >
+            Previous
+          </Button>
+
+          <span className="text-sm text-muted-foreground">
+            Page {page} of {data.totalPages}
+          </span>
+
+          <Button
+            variant="outline"
+            disabled={page >= data.totalPages}
+            onClick={() => setParams({ page: String(page + 1) })}
+          >
+            Next
+          </Button>
+        </div>
+      )}
+
       <AlertDialog
         open={!!resumeToDelete}
         onOpenChange={(open) => !open && setResumeToDelete(null)}
@@ -262,7 +256,7 @@ export default function ResumesPage() {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleDelete}
+              onClick={() => deleteResume(resumeToDelete!)}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Delete

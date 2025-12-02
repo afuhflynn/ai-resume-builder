@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
       title,
       industry,
       regionalStandard,
-      templateId: bodyTemplateId,
+      templateId,
       fullName,
       jobTitle,
       email,
@@ -45,9 +45,11 @@ export async function POST(req: NextRequest) {
       educations,
       colorTheme,
     } = body;
-
     if (!title) {
-      return NextResponse.json({ error: "Title is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Resume Title is required" },
+        { status: 400 }
+      );
     }
 
     const user = await prisma.user.findUnique({
@@ -63,21 +65,18 @@ export async function POST(req: NextRequest) {
       where: { name: "Modern" },
     });
 
-    const templateId = bodyTemplateId || defaultTemplate?.id;
-
-    const resumeTemplate = (await prisma.resumeTemplate.findUnique({
-      where: { id: templateId },
-    })) as unknown as ResumeTemplate;
-
-    if (!resumeTemplate) {
-      return NextResponse.json(
-        { error: "An unexpected error occurred" },
-        { status: 500 }
-      );
-    }
-
     let resume;
-    if (resumeTemplate) {
+    if (templateId && templateId !== null && templateId !== undefined) {
+      const resumeTemplate = (await prisma.resumeTemplate.findUnique({
+        where: { id: templateId },
+      })) as unknown as ResumeTemplate;
+
+      if (!resumeTemplate) {
+        return NextResponse.json(
+          { error: "An unexpected error occurred" },
+          { status: 500 }
+        );
+      }
       console.log(`Using template: ${resumeTemplate.name}`);
       resume = await prisma.resume.create({
         data: {
@@ -164,24 +163,24 @@ export async function POST(req: NextRequest) {
         data: {
           userId: session.user.id,
           title,
-          templateId,
-          colorTheme: colorTheme || "#3b82f6", // Default to Modern theme primary
+          templateId: defaultTemplate?.id,
+          colorTheme: colorTheme || "", // Default to Modern theme primary
           industry: industry || null,
           regionalStandard: regionalStandard || null,
 
           // Personal info - prioritize body data, fallback to user data
-          fullName: fullName || user.fullName || session.user.name || "",
+          fullName: fullName || "",
           jobTitle: jobTitle || "",
-          email: email || session.user.email || "",
-          phone: phone || user.phone || "",
-          location: location || user.location || "",
-          website: website || user.website || "",
-          linkedin: linkedin || user.linkedin || "",
+          email: email || "",
+          phone: phone || "",
+          location: location || "",
+          website: website || "",
+          linkedin: linkedin || "",
           x: x || user.x || "",
-          profile: session.user.image,
+          profile: "",
 
           // Resume content
-          professionalSummary: professionalSummary || user.bio || "",
+          professionalSummary: professionalSummary || "",
           experiences: experiences || [],
           skills: skills || [],
           projects: projects || [],
@@ -229,7 +228,6 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-
 export async function GET(req: NextRequest) {
   try {
     const session = await auth.api.getSession({
@@ -240,21 +238,31 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const resumes = await prisma.resume.findMany({
-      where: { userId: session.user.id },
-      orderBy: { updatedAt: "desc" },
-      include: {
-        template: true,
-        _count: {
-          select: {
-            versions: true,
-            uploadFiles: true,
-          },
-        },
-      },
-    });
+    const { searchParams } = new URL(req.url);
+    const page = Number(searchParams.get("page") ?? 1);
+    const limit = Number(searchParams.get("limit") ?? 10);
 
-    return NextResponse.json(resumes);
+    const skip = (page - 1) * limit;
+
+    const [resumes, total] = await Promise.all([
+      prisma.resume.findMany({
+        where: { userId: session.user.id },
+        orderBy: { updatedAt: "desc" },
+        skip,
+        take: limit,
+      }),
+      prisma.resume.count({
+        where: { userId: session.user.id },
+      }),
+    ]);
+
+    return NextResponse.json({
+      data: resumes,
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    });
   } catch (error) {
     console.error("Fetch resumes error:", error);
     return NextResponse.json(

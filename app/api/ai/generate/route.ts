@@ -11,7 +11,7 @@ const posthogClient = new PostHog(
   process.env.NEXT_PUBLIC_POSTHOG_KEY as string,
   {
     host: process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://app.posthog.com",
-  },
+  }
 );
 
 export async function POST(req: NextRequest) {
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
     if (!jobTitle || !experience || !title) {
       return NextResponse.json(
         { error: "Missing job title, experience, or resume title" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -36,15 +36,15 @@ export async function POST(req: NextRequest) {
     const creditResult = await deductCredits(
       session.user.id,
       "GENERATE_RESUME",
-      { jobTitle, experience: experience.substring(0, 100) }, // Log only a part of experience
+      { jobTitle, experience: experience.substring(0, 100) } // Log only a part of experience
     );
 
-    // if (!creditResult.success) {
-    //   return NextResponse.json(
-    //     { error: creditResult.error, remaining: creditResult.remaining },
-    //     { status: 402 } // Payment Required
-    //   );
-    // }
+    if (!creditResult.success) {
+      return NextResponse.json(
+        { error: creditResult.error, remaining: creditResult.remainingCredits },
+        { status: 402 } // Payment Required
+      );
+    }
 
     // Pass jobTitle and experience to generateResume
     const resumeContent = await generateResume({ jobTitle, experience });
@@ -84,13 +84,13 @@ export async function POST(req: NextRequest) {
         jobTitle,
         title,
         creditsUsed: 50, // Assuming 50 credits per generation based on tasks.md
-        // creditsRemaining: creditResult.remaining,
+        // creditsRemaining: creditResult.remainingCredits,
       },
     });
 
     return NextResponse.json({
-      resumeId: newResume.id, // Return the ID of the new resume
-      // creditsRemaining: creditResult.remaining,
+      resume: newResume, // Return the ID of the new resume
+      // creditsRemaining: creditResult.remainingCredits,
     });
   } catch (error) {
     console.error("AI Resume Generation API error:", error);
@@ -119,7 +119,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(
       { error: "Internal server error during AI resume generation" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

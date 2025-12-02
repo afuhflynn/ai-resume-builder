@@ -3,7 +3,7 @@ import { ajAI } from "@/lib/arcjet";
 import { streamResumeImprovement } from "@/lib/ai";
 
 export async function POST(req: NextRequest) {
-  const decision = await ajAI.protect(req);
+  const decision = await ajAI.protect(req, { requested: 1 });
 
   if (decision.isDenied()) {
     return new Response("Too many requests", { status: 429 });
@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
 
   const { section } = await req.json();
 
-  const result = await streamResumeImprovement(section);
+  const result = streamResumeImprovement(section);
 
-  return result.toDataStreamResponse();
+  return result.toTextStreamResponse();
 }

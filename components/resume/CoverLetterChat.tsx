@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Loader2, Copy, Wand2, Send, RefreshCw, ArrowLeft } from "lucide-react";
-import { useResume } from "@/providers/ResumeProvider";
+
 import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";

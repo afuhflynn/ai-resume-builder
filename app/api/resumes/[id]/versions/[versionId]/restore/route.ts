@@ -37,7 +37,7 @@ export async function POST(
       resume: {
         id: result.resume.id,
         title: result.resume.title,
-        content: result.resume.content,
+        resume: result.resume,
         updatedAt: result.resume.updatedAt,
       },
       newVersion: {

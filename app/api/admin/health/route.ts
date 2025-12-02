@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
       headers: await headers(),
     });
 
-    if (!isAdmin(session)) {
+    if (!isAdmin(session?.session)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
@@ -22,7 +22,9 @@ export async function GET(req: NextRequest) {
       healthStatus.database = "Healthy";
     } catch (dbError: any) {
       console.error("Health check - Database error:", dbError);
-      healthStatus.database = `Unhealthy: ${dbError.message || "Connection failed"}`;
+      healthStatus.database = `Unhealthy: ${
+        dbError.message || "Connection failed"
+      }`;
     }
 
     // Add checks for other services (e.g., MinIO, OpenAI, Stripe) if applicable

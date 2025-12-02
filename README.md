@@ -58,7 +58,7 @@ This platform is built with:
 
 ---
 
-## 📦 Tech Stack
+## Tech Stack
 
 **Frontend:** Next.js, TypeScript, TailwindCSS
 **Backend:** Next.js Server Actions & Route Handlers
@@ -71,12 +71,12 @@ This platform is built with:
 
 ---
 
-## 🐳 Running Locally
+## Running Locally
 
 ### 1. Clone the repository
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/afuhflynn/ai-resume-builder.git
 cd ai-resume-builder
 ```
 
@@ -102,14 +102,68 @@ pnpm install
 Copy `.env.example` into `.env` and update the following:
 
 ```env
-DATABASE_URL="postgresql://user:password@localhost:5432/resume_builder"
+# Database
+DATABASE_URL=postgresql://postgres:postgres@localhost:8003/ai_resume_builder
+
+# MinIO File Storage
 MINIO_ENDPOINT=localhost
+MINIO_PORT=8004
 MINIO_ACCESS_KEY=minioadmin
 MINIO_SECRET_KEY=minioadmin
-STRIPE_SECRET_KEY=sk_live_xxx
-STRIPE_WEBHOOK_SECRET=whsec_xxx
-AUTH_SECRET=xxx
-OPENAI_API_KEY=xxx
+MINIO_USE_SSL=false
+MINIO_BUCKET_NAME=resumes
+
+# Authentication
+BETTER_AUTH_SECRET=xxxxxxxxxxxxxxxxxxxx
+BETTER_AUTH_URL="http://localhost:3000" # Base URL of your app
+
+# OAuth Providers
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+GITHUB_CLIENT_ID=your_github_client_id
+GITHUB_CLIENT_SECRET=your_github_client_secret
+
+# Stripe Payment
+STRIPE_SECRET_KEY=xxxxxxxxxxxxxxxxxxxx
+STRIPE_PUBLISHABLE_KEY=xxxxxxxxxxxxxxxxxxxxxxxxx
+STRIPE_WEBHOOK_SECRET=xxxxxxxxxxxxxxxxxxxx
+STRIPE_STARTER_PRICE_ID=xxxxxxxxxxxxxxxxxx
+STRIPE_PRO_PRICE_ID=xxxxxxxxxxxxxxxxxx
+STRIPE_TEAM_PRICE_ID=xxxxxxxxxxxxxxxxxxx
+
+# Arcjet Security
+ARCJET_KEY=xxxxxxxxxxxxxxxxxx
+
+# AI Provider
+GOOGLE_GENERATIVE_AI_API_KEY=xxxxxxxxxxx
+
+# App Configuration
+NODE_ENV="development"
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+NEXT_PUBLIC_POSTHOG_KEY=xxxxxx
+NEXT_PUBLIC_POSTHOG_HOST=xxxxxxx
+
+# Flutterwave
+FLW_PUBLIC_KEY=FLWPUBK_TEST-xxxxxxxx
+FLW_SECRET_KEY=FLWSECK_TEST-xxxxxxxx
+FLW_ENCRYPTION_KEY=FLWSECK_TEST_xxxxxxxx
+FLW_WEBHOOK_SECRET=your_webhook_secret
+
+
+# MTN Mobile Money setup
+MOMO_COLLECTIONS_PRIMARY_KEY=your_collections_primary_key
+MOMO_COLLECTIONS_USER_ID=your_api_user_id
+MOMO_COLLECTIONS_USER_SECRET=your_api_user_secret
+MOMO_CALLBACK_HOST=your_publicly_accessible_callback_url
+
+
+# ORANGE Mobile Money setup
+ORANGE_MONEY_MERCHANT_KEY=your_merchant_key
+ORANGE_MONEY_API_USER=your_api_username
+ORANGE_MONEY_API_PASSWORD=your_api_password
+ORANGE_MONEY_RETURN_URL=your_return_url
+ORANGE_MONEY_CANCEL_URL=your_cancel_url
+ORANGE_MONEY_NOTIF_URL=your_notification_url
 ```
 
 ### 5. Apply database migrations
@@ -126,15 +180,15 @@ npm run dev
 
 Your app should now be live at:
 
-```
+```cmd
 http://localhost:3000
 ```
 
 ---
 
-## 🧩 Project Structure
+## Project Structure
 
-```
+```cmd
 app/
  ├─ (marketing)/
  ├─ (auth)/
@@ -157,14 +211,16 @@ scripts/
 
 ---
 
-## 🧪 Testing
+## Testing
 
 ### Unit Tests
 
 Unit tests are planned using **Vitest** for utilities and core logic.
+
 ```bash
 pnpm test
 ```
+
 (Implementation pending)
 
 ### E2E Tests
@@ -175,14 +231,16 @@ E2E tests are planned using **Playwright** for:
 * Billing flow
 * AI endpoints
 * Resume builder actions
+
 ```bash
 pnpm test:e2e
 ```
+
 (Implementation pending)
 
 ---
 
-## 📤 Deployment
+## Deployment
 
 ### Docker Build
 
@@ -206,7 +264,7 @@ docker build -t ai-resume-builder .
 
 ---
 
-## 📘 Policies
+## Policies
 
 This project includes:
 
@@ -218,14 +276,14 @@ This project includes:
 
 All legal pages are located in:
 
-```
+```cmd
 app/(marketing)/terms
 app/(marketing)/privacy
 ```
 
 ---
 
-## 📈 Roadmap
+## Roadmap
 
 * Team collaboration
 * AI-powered interview prep
@@ -235,13 +293,13 @@ app/(marketing)/privacy
 
 ---
 
-## 📝 License
+## License
 
 This project is released under a **Proprietary License**.
 Refer to the `LICENSE.md` file for full details.
 
 ---
 
-## 🙌 Author
+## Author
 
 Built with dedication and endless ambition.

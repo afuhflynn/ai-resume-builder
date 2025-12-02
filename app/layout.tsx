@@ -5,8 +5,9 @@ import { ThemeProvider } from "@/components/provider/theme-provider";
 import { AnalyticsProvider } from "@/providers/PostHogProvider"; // Assuming PostHogProvider.tsx now exports AnalyticsProvider
 import { Toaster } from "sonner";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
+import { Metadata } from "next";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Resumi - AI Resume Builder",
   description: "Generate professional resumes with AI",
 };

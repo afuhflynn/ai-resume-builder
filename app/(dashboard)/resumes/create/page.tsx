@@ -4,6 +4,12 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select";
+import {
   Card,
   CardContent,
   CardDescription,
@@ -19,6 +25,7 @@ import {
   ArrowLeft,
   Loader2,
   LayoutTemplate,
+  CheckCheck,
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -26,17 +33,21 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { TemplateSelector } from "@/components/resume/templates/TemplateSelector";
 import { INDUSTRIES, REGIONAL_STANDARDS } from "@/constants/resume";
+import {
+  useCreateResume,
+  useGenerateResume,
+  useImportCreateResume,
+} from "@/hooks";
 
 export default function CreateResumePage() {
-  const router = useRouter();
   const [title, setTitle] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
 
   // AI Generation Dialog
   const [showAIDialog, setShowAIDialog] = useState(false);
@@ -51,115 +62,15 @@ export default function CreateResumePage() {
 
   // Import Dialog
   const [showImportDialog, setShowImportDialog] = useState(false);
+  const [showScratchDialog, setShowScratchDialog] = useState(false);
   const [importFile, setImportFile] = useState<File | null>(null);
   const importFileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const createEmptyResume = async () => {
-    if (!title.trim()) {
-      toast.error("Please enter a resume title");
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const response = await fetch("/api/resumes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: title.trim(),
-          templateId: null,
-        }),
-      });
-
-      if (!response.ok) throw new Error("Failed to create resume");
-
-      const resume = await response.json();
-      toast.success("Resume created successfully!");
-      router.push(`/editor/${resume.id}`);
-    } catch (error) {
-      console.error("Error creating resume:", error);
-      toast.error("Failed to create resume");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const createWithTemplate = async () => {
-    if (!title.trim()) {
-      toast.error("Please enter a resume title");
-      return;
-    }
-
-    if (!selectedTemplate) {
-      toast.error("Please select a template");
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const response = await fetch("/api/resumes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: title.trim(),
-          templateId: selectedTemplate,
-          industry: selectedIndustry || null,
-          regionalStandard: selectedRegional || null,
-        }),
-      });
-
-      if (!response.ok) throw new Error("Failed to create resume");
-
-      const resume = await response.json();
-      toast.success("Resume created with template!");
-      router.push(`/editor/${resume.id}`);
-    } catch (error) {
-      console.error("Error creating resume:", error);
-      toast.error("Failed to create resume");
-    } finally {
-      setIsLoading(false);
-      setShowTemplateDialog(false);
-    }
-  };
-
-  const generateWithAI = async () => {
-    if (!title.trim()) {
-      toast.error("Please enter a resume title");
-      return;
-    }
-
-    if (!jobTitle.trim() || !experience.trim()) {
-      toast.error("Please fill in all AI generation fields");
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      // First, generate the resume content with AI
-      const aiResponse = await fetch("/api/ai/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          jobTitle: jobTitle.trim(),
-          experience: experience.trim(),
-          title,
-        }),
-      });
-
-      if (!aiResponse.ok) throw new Error("Failed to generate resume with AI");
-
-      const data = await aiResponse.json();
-
-      toast.success("Resume generated with AI!");
-      router.push(`/editor/${data.resumeId}`);
-    } catch (error) {
-      console.error("Error generating resume:", error);
-      toast.error("Failed to generate resume with AI");
-    } finally {
-      setIsLoading(false);
-      setShowAIDialog(false);
-    }
-  };
+  const { mutate: createResume, isPending: creatingResume } = useCreateResume();
+  const { mutate: importCreateResume, isPending: importingResume } =
+    useImportCreateResume();
+  const { mutate: generateResume, isPending: generatingResume } =
+    useGenerateResume();
 
   const importResume = async () => {
     if (!title.trim()) {
@@ -171,49 +82,16 @@ export default function CreateResumePage() {
       toast.error("Please select a file to import");
       return;
     }
-
-    setIsLoading(true);
-    try {
-      // First, parse the file
-      const formData = new FormData();
-      formData.append("file", importFile);
-
-      const parseResponse = await fetch("/api/resumes/import", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!parseResponse.ok) throw new Error("Failed to parse resume");
-
-      const { data: parsedContent } = await parseResponse.json();
-
-      // Then create the resume with parsed content
-      const createResponse = await fetch("/api/resumes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: title.trim(),
-          content: parsedContent,
-        }),
-      });
-
-      if (!createResponse.ok) throw new Error("Failed to save resume");
-
-      const resume = await createResponse.json();
-      toast.success("Resume imported successfully!");
-      router.push(`/editor/${resume.id}`);
-    } catch (error) {
-      console.error("Error importing resume:", error);
-      toast.error("Failed to import resume");
-    } finally {
-      setIsLoading(false);
-      setShowImportDialog(false);
-    }
+    const formData = new FormData();
+    formData.append("file", importFile);
+    importCreateResume({ data: formData });
   };
+
+  const isLoading = creatingResume || importingResume || generatingResume;
 
   return (
     <>
-      <div className="max-w-5xl mx-auto space-y-8 py-8 px-4  p-4 lg:p-8">
+      <div className="w-full mx-auto space-y-8 py-8 px-4  p-4 lg:p-8 flex-1">
         <div className="flex items-center gap-4">
           <Link href="/resumes">
             <Button variant="ghost" size="icon">
@@ -230,25 +108,11 @@ export default function CreateResumePage() {
           </div>
         </div>
 
-        <div className="space-y-4">
-          <Label htmlFor="title" className="text-lg font-medium">
-            Resume Title
-          </Label>
-          <Input
-            id="title"
-            placeholder="e.g. Software Engineer 2024"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="max-w-md text-lg p-6"
-            autoFocus
-          />
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mt-6">
           {/* Start from Scratch */}
           <Card
             className="cursor-pointer transition-all hover:border-primary hover:shadow-md"
-            onClick={createEmptyResume}
+            onClick={() => setShowScratchDialog(true)}
           >
             <CardHeader>
               <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 text-primary">
@@ -348,6 +212,19 @@ export default function CreateResumePage() {
               Provide some information and let AI create your resume.
             </DialogDescription>
           </DialogHeader>
+          <div className="space-y-4 w-full">
+            <Label htmlFor="title" className="text-lg font-medium">
+              Resume Title
+            </Label>
+            <Input
+              id="title"
+              placeholder="e.g. Software Engineer 2024"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="text-lg p-6"
+              autoFocus
+            />
+          </div>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="jobTitle">Desired Job Title</Label>
@@ -369,7 +246,7 @@ export default function CreateResumePage() {
               />
             </div>
           </div>
-          <div className="flex justify-end gap-3">
+          <DialogFooter className="flex justify-end gap-3">
             <Button
               variant="outline"
               onClick={() => setShowAIDialog(false)}
@@ -377,7 +254,16 @@ export default function CreateResumePage() {
             >
               Cancel
             </Button>
-            <Button onClick={generateWithAI} disabled={isLoading}>
+            <Button
+              onClick={() =>
+                generateResume({
+                  jobTitle: jobTitle.trim(),
+                  experience: experience.trim(),
+                  title,
+                })
+              }
+              disabled={isLoading}
+            >
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -390,7 +276,7 @@ export default function CreateResumePage() {
                 </>
               )}
             </Button>
-          </div>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
@@ -404,24 +290,40 @@ export default function CreateResumePage() {
               later.
             </DialogDescription>
           </DialogHeader>
+          <div className="space-y-4 w-full">
+            <Label htmlFor="title" className="text-lg font-medium">
+              Resume Title
+            </Label>
+            <Input
+              id="title"
+              placeholder="e.g. Software Engineer 2024"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="text-lg p-6"
+              autoFocus
+            />
+          </div>
 
           <div className="space-y-6 py-4">
             {/* Industry Selection */}
             <div className="space-y-2">
               <Label htmlFor="industry">Industry / Field</Label>
-              <select
-                id="industry"
-                className="w-full px-3 py-2 border rounded-md bg-background"
+              <Select
+                name="industry"
                 value={selectedIndustry}
-                onChange={(e) => setSelectedIndustry(e.target.value)}
+                onValueChange={(value) => setSelectedIndustry(value)}
               >
-                <option value="">Select your industry...</option>
-                {INDUSTRIES.map((industry) => (
-                  <option key={industry.value} value={industry.value}>
-                    {industry.label}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="w-full h-12!">
+                  Select your industry...
+                </SelectTrigger>
+                <SelectContent>
+                  {INDUSTRIES.map((industry) => (
+                    <SelectItem key={industry.value} value={industry.value}>
+                      {industry.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <p className="text-xs text-muted-foreground">
                 This helps us recommend the best sections for your resume
               </p>
@@ -430,19 +332,23 @@ export default function CreateResumePage() {
             {/* Regional Standard Selection */}
             <div className="space-y-2">
               <Label htmlFor="regional">Regional Standard</Label>
-              <select
-                id="regional"
-                className="w-full px-3 py-2 border rounded-md bg-background"
+              <Select
+                name="regional"
                 value={selectedRegional}
-                onChange={(e) => setSelectedRegional(e.target.value)}
+                onValueChange={(value) => setSelectedRegional(value)}
               >
-                <option value="">Select regional format...</option>
-                {REGIONAL_STANDARDS.map((region) => (
-                  <option key={region.value} value={region.value}>
-                    {region.label}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="w-full h-12!">
+                  Select regional format...
+                </SelectTrigger>
+                <SelectContent>
+                  {REGIONAL_STANDARDS.map((region) => (
+                    <SelectItem key={region.value} value={region.value}>
+                      {region.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
               {selectedRegional && (
                 <p className="text-xs text-muted-foreground">
                   {
@@ -461,7 +367,7 @@ export default function CreateResumePage() {
             />
           </div>
 
-          <div className="flex justify-end gap-3 w-full">
+          <DialogFooter className="flex justify-end gap-3 w-full">
             <Button
               variant="outline"
               onClick={() => setShowTemplateDialog(false)}
@@ -470,7 +376,14 @@ export default function CreateResumePage() {
               Cancel
             </Button>
             <Button
-              onClick={createWithTemplate}
+              onClick={() =>
+                createResume({
+                  title: title.trim(),
+                  templateId: selectedTemplate,
+                  industry: selectedIndustry || null,
+                  regionalStandard: selectedRegional || null,
+                })
+              }
               disabled={isLoading || !selectedTemplate}
             >
               {isLoading ? (
@@ -482,7 +395,7 @@ export default function CreateResumePage() {
                 "Create Resume"
               )}
             </Button>
-          </div>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
@@ -495,6 +408,19 @@ export default function CreateResumePage() {
               Upload your existing resume file (PDF or DOCX).
             </DialogDescription>
           </DialogHeader>
+          <div className="space-y-4 w-full">
+            <Label htmlFor="title" className="text-lg font-medium">
+              Resume Title
+            </Label>
+            <Input
+              id="title"
+              placeholder="e.g. Software Engineer 2024"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="text-lg p-6"
+              autoFocus
+            />
+          </div>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="file">Resume File</Label>
@@ -528,7 +454,7 @@ export default function CreateResumePage() {
               </p>
             </div>
           </div>
-          <div className="flex justify-end gap-3">
+          <DialogFooter className="flex justify-end gap-3">
             <Button
               variant="outline"
               onClick={() => setShowImportDialog(false)}
@@ -549,7 +475,62 @@ export default function CreateResumePage() {
                 </>
               )}
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Scratch Dialog */}
+      <Dialog open={showScratchDialog} onOpenChange={setShowScratchDialog}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Create Resume From Scratch</DialogTitle>
+            <DialogDescription>
+              Input a resume title below to get started.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 w-full">
+            <Label htmlFor="title" className="text-lg font-medium">
+              Resume Title
+            </Label>
+            <Input
+              id="title"
+              placeholder="e.g. Software Engineer 2024"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="text-lg p-6"
+              autoFocus
+            />
           </div>
+          <DialogFooter className="flex justify-end gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setShowScratchDialog(false)}
+              disabled={isLoading}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() =>
+                createResume({
+                  title: title.trim(),
+                  templateId: null,
+                })
+              }
+              disabled={isLoading || !title}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                <>
+                  <CheckCheck className="mr-2 h-4 w-4" />
+                  Create Resume
+                </>
+              )}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>

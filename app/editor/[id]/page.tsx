@@ -1,4 +1,3 @@
-import { ResumeProvider } from "@/providers/ResumeProvider";
 import { ResumeBuilder } from "@/components/resume/ResumeBuilder";
 
 export default async function ResumeBuilderPage({
@@ -7,9 +6,5 @@ export default async function ResumeBuilderPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  return (
-    <ResumeProvider>
-      <ResumeBuilder id={id} />
-    </ResumeProvider>
-  );
+  return <ResumeBuilder id={id} />;
 }

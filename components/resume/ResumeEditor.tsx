@@ -1,6 +1,5 @@
 "use client";
 
-import { useResume } from "@/providers/ResumeProvider";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,6 +12,7 @@ import {
 } from "@/components/ui/accordion";
 import { Plus, Trash2 } from "lucide-react";
 import { AIEnhancer } from "./AIEnhancer";
+import { useResumeStore } from "@/lib/store/resume-store";
 
 export function ResumeEditor() {
   const {
@@ -31,7 +31,7 @@ export function ResumeEditor() {
     addProject,
     updateProject,
     removeProject,
-  } = useResume();
+  } = useResumeStore();
 
   return (
     <div className="space-y-6 p-6 h-full overflow-auto">

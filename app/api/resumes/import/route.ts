@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     if (!title || title.trim().length === 0) {
       return NextResponse.json(
         { error: "Resume title is required" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
     if (!validTypes.includes(file.type)) {
       return NextResponse.json(
         { error: "Invalid file type. Only PDF, DOCX, and TXT are supported." },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
     if (!text || text.trim().length === 0) {
       return NextResponse.json(
         { error: "Could not extract text from file" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
 
     // if (!creditResult.success) {
     //   return NextResponse.json(
-    //     { error: creditResult.error, remaining: creditResult.remaining },
+    //     { error: creditResult.error, remaining: creditResult.remainingCredits },
     //     { status: 402 }, // Payment Required
     //   );
     // }
@@ -102,13 +102,13 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       resumeId: newResume.id, // Return the ID of the new resume
-      // creditsRemaining: creditResult.remaining,
+      // creditsRemaining: creditResult.remainingCredits,
     });
   } catch (error) {
     console.error("Resume import error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

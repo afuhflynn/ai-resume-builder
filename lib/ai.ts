@@ -1,73 +1,7 @@
+import { optimizeForATSSchema, resumeSchema } from "@/zod";
 import { google } from "@ai-sdk/google";
 import { generateText, streamText, generateObject } from "ai";
-import { z } from "zod";
 import { nanoid } from "nanoid";
-
-// Shared Schema
-const resumeSchema = z.object({
-  personalInfo: z.object({
-    fullName: z.string().default(""),
-    email: z.string().default(""),
-    phone: z.string().default(""),
-    location: z.string().default(""),
-    website: z.string().default(""),
-    linkedin: z.string().default(""),
-    jobTitle: z.string().default(""),
-  }),
-  summary: z.string().default(""),
-  experience: z
-    .array(
-      z.object({
-        id: z.string().optional(),
-        company: z.string().default(""),
-        position: z.string().default(""),
-        startDate: z.string().default(""),
-        endDate: z.string().default(""),
-        current: z.boolean().default(false),
-        location: z.string().default(""),
-        description: z.string().default(""),
-      }),
-    )
-    .default([]),
-  education: z
-    .array(
-      z.object({
-        id: z.string().optional(),
-        school: z.string().default(""),
-        degree: z.string().default(""),
-        field: z.string().default(""),
-        startDate: z.string().default(""),
-        endDate: z.string().default(""),
-        current: z.boolean().default(false),
-        location: z.string().default(""),
-        description: z.string().default(""),
-      }),
-    )
-    .default([]),
-  skills: z
-    .array(
-      z.object({
-        id: z.string().optional(),
-        name: z.string(),
-        level: z
-          .enum(["Beginner", "Intermediate", "Advanced", "Expert"])
-          .default("Intermediate"),
-      }),
-    )
-    .default([]),
-  completeness: z.number().default(0),
-  projects: z
-    .array(
-      z.object({
-        id: z.string().optional(),
-        name: z.string().default(""),
-        description: z.string().default(""),
-        url: z.string().default(""),
-        technologies: z.array(z.string()).default([]),
-      }),
-    )
-    .default([]),
-});
 
 export async function generateResume({
   jobTitle,
@@ -121,7 +55,7 @@ export async function generateResume({
 
 export async function improveResumeSection(
   section: string,
-  tone: "professional" | "casual" | "technical" = "professional",
+  tone: "professional" | "casual" | "technical" = "professional"
 ) {
   const { text } = await generateText({
     model: google("gemini-2.5-flash-lite"),
@@ -138,7 +72,7 @@ Provide only the improved version without explanations.`,
 export async function generateCoverLetter(
   jobDescription: string,
   resume: string,
-  tone: "professional" | "enthusiastic" | "formal" = "professional",
+  tone: "professional" | "enthusiastic" | "formal" = "professional"
 ) {
   const { text } = await generateText({
     model: google("gemini-1.5-flash"), // Fixed model name
@@ -159,8 +93,9 @@ Create a personalized, engaging cover letter that highlights relevant experience
 }
 
 export async function optimizeForATS(resumeText: string) {
-  const { text } = await generateText({
+  const { object } = await generateObject({
     model: google("gemini-2.5-flash-lite"),
+    schema: optimizeForATSSchema,
     prompt: `Analyze this resume for ATS optimization and provide:
 1. ATS score (0-100)
 2. Missing keywords
@@ -171,7 +106,7 @@ Resume:
 ${resumeText}`,
   });
 
-  return text;
+  return object;
 }
 
 export function streamResumeImprovement(section: string) {

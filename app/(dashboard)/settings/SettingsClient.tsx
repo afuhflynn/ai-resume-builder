@@ -65,7 +65,12 @@ export function SettingsClient({ user, subscription }: SettingsClientProps) {
 
       <TabsContent value="billing" className="space-y-4">
         <div className="border rounded-lg p-6 bg-card">
-          <BillingClient subscription={subscription} user={user} />
+          {/* TODO: Use correct plans info */}
+          <BillingClient
+            plans={subscription}
+            subscription={subscription}
+            user={user}
+          />
         </div>
       </TabsContent>
     </Tabs>

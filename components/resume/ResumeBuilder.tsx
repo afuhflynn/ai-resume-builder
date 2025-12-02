@@ -19,7 +19,6 @@ import {
   RefreshCw,
 } from "lucide-react";
 import Link from "next/link";
-import { useResume } from "@/providers/ResumeProvider";
 import { ResumeEditor } from "@/components/resume/ResumeEditor";
 import { ResumePreview } from "@/components/resume/ResumePreview";
 import { TemplateSelector } from "@/components/resume/templates/TemplateSelector";
@@ -32,6 +31,7 @@ import { useQueryStates } from "nuqs";
 import { searchParamsSchema } from "@/nuqs";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useResumeStore } from "@/lib/store/resume-store";
 
 export function ResumeBuilder({ id }: { id: string }) {
   const {
@@ -46,7 +46,7 @@ export function ResumeBuilder({ id }: { id: string }) {
     downloadPDF, // NEW
     regenerateAssets, // NEW
     isGeneratingAssets, // NEW
-  } = useResume();
+  } = useResumeStore();
   const isMobile = useIsMobile();
   const [params, setParams] = useQueryStates(searchParamsSchema);
   const { build_tab, build_active_tab, build_ai_tab } = params;

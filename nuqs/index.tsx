@@ -5,6 +5,8 @@ export const searchParamsSchema = {
   build_tab: parseAsString.withDefault("content"),
   build_active_tab: parseAsString.withDefault("editor"),
   build_ai_tab: parseAsString.withDefault("cover_letter"),
+  page: parseAsString.withDefault("1"),
+  limit: parseAsString.withDefault("10"),
 };
 
 type ParamsTypes = Values<{

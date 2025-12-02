@@ -1,11 +1,11 @@
 "use client";
 
-import { useResume } from "@/providers/ResumeProvider";
 import { ResumePDF } from "@/lib/resume-pdf-generator";
 import { Resume, ResumeTemplate } from "@prisma/client";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { GlassTemplate } from "./templates/GlassTemplate";
+import { useResumeStore } from "@/lib/store/resume-store";
 
 const PDFViewer = dynamic(
   () => import("@react-pdf/renderer").then((mod) => mod.PDFViewer),
@@ -20,7 +20,7 @@ const PDFViewer = dynamic(
 );
 
 export function ResumePreview() {
-  const { resumeData } = useResume();
+  const { resumeData } = useResumeStore();
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {

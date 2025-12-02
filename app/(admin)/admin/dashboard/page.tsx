@@ -28,7 +28,7 @@ export default async function AdminDashboardPage() {
     headers: await headers(),
   });
 
-  if (!isAdmin(session)) {
+  if (!isAdmin(session?.session)) {
     redirect("/login"); // Or to a specific unauthorized page
   }
 

@@ -11,23 +11,21 @@ const posthogClient = new PostHog(process.env.POSTHOG_API_KEY as string, {
 });
 
 export async function POST(req: NextRequest) {
-  let requestBody;
+  const requestBody = await req.json();
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    requestBody = await req.json();
     const { section, tone } = requestBody;
 
     if (!section) {
       return NextResponse.json(
         { error: "Missing section content" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -35,7 +33,7 @@ export async function POST(req: NextRequest) {
     const creditResult = await deductCredits(
       session.user.id,
       "IMPROVE_SECTION",
-      { sectionLength: section.length },
+      { sectionLength: section.length }
     );
 
     if (!creditResult.success) {
@@ -46,19 +44,19 @@ export async function POST(req: NextRequest) {
         properties: {
           reason: "insufficient_credits",
           creditsNeeded: 10, // Assuming 10 credits per improvement based on tasks.md
-          creditsRemaining: creditResult.remaining,
+          creditsRemaining: creditResult.remainingCredits,
           sectionLength: section.length,
         },
       });
       return NextResponse.json(
-        { error: creditResult.error, remaining: creditResult.remaining },
-        { status: 402 }, // Payment Required
+        { error: creditResult.error, remaining: creditResult.remainingCredits },
+        { status: 402 } // Payment Required
       );
     }
 
     const improvedText = await improveResumeSection(
       section,
-      tone || "professional",
+      tone || "professional"
     );
 
     // Capture successful section improvement
@@ -69,13 +67,13 @@ export async function POST(req: NextRequest) {
         sectionLength: section.length,
         tone: tone || "professional",
         creditsUsed: 10, // Assuming 10 credits per improvement based on tasks.md
-        creditsRemaining: creditResult.remaining,
+        creditsRemaining: creditResult.remainingCredits,
       },
     });
 
     return NextResponse.json({
       improvedText,
-      creditsRemaining: creditResult.remaining,
+      creditsRemaining: creditResult.remainingCredits,
     });
   } catch (error) {
     console.error("Resume improvement error:", error);
@@ -104,7 +102,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

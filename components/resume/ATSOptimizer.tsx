@@ -12,8 +12,9 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, CheckCircle2, AlertCircle, Lightbulb } from "lucide-react";
-import { useResume } from "@/providers/ResumeProvider";
+
 import { toast } from "sonner";
+import { useResumeStore } from "@/lib/store/resume-store";
 
 interface ATSAnalysis {
   score: number;
@@ -23,7 +24,7 @@ interface ATSAnalysis {
 }
 
 export function ATSOptimizer() {
-  const { resumeData } = useResume();
+  const { resumeData } = useResumeStore();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<ATSAnalysis | null>(null);
 

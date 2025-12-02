@@ -9,9 +9,18 @@ import { z } from "zod";
 const createReferralSchema = z.object({
   referrerId: z.string().min(1, "Referrer ID is required"),
   referredId: z.string().min(1, "Referred ID is required"),
-  code: z.string().min(3, "Referral code must be at least 3 characters long").max(50),
-  creditsAwarded: z.number().int().min(0, "Credits awarded cannot be negative").default(0),
-  status: z.enum(["PENDING", "COMPLETED", "CANCELLED", "EXPIRED"]).default("PENDING"),
+  code: z
+    .string()
+    .min(3, "Referral code must be at least 3 characters long")
+    .max(50),
+  creditsAwarded: z
+    .number()
+    .int()
+    .min(0, "Credits awarded cannot be negative")
+    .default(0),
+  status: z
+    .enum(["PENDING", "COMPLETED", "CANCELLED", "EXPIRED"])
+    .default("PENDING"),
   completedAt: z.string().datetime().nullable().optional(),
 });
 
@@ -21,7 +30,7 @@ export async function GET(req: NextRequest) {
       headers: await headers(),
     });
 
-    if (!isAdmin(session)) {
+    if (!isAdmin(session?.session)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
@@ -38,7 +47,7 @@ export async function GET(req: NextRequest) {
     console.error("Admin referrals GET error:", error);
     return NextResponse.json(
       { error: "Failed to fetch referrals" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -49,7 +58,7 @@ export async function POST(req: NextRequest) {
       headers: await headers(),
     });
 
-    if (!isAdmin(session)) {
+    if (!isAdmin(session?.session)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
@@ -63,10 +72,16 @@ export async function POST(req: NextRequest) {
     ]);
 
     if (!referrerUser) {
-      return NextResponse.json({ error: "Referrer user not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Referrer user not found" },
+        { status: 404 }
+      );
     }
     if (!referredUser) {
-      return NextResponse.json({ error: "Referred user not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Referred user not found" },
+        { status: 404 }
+      );
     }
 
     const referral = await prisma.referral.create({
@@ -76,7 +91,9 @@ export async function POST(req: NextRequest) {
         code: validatedData.code,
         creditsAwarded: validatedData.creditsAwarded,
         status: validatedData.status,
-        completedAt: validatedData.completedAt ? new Date(validatedData.completedAt) : null,
+        completedAt: validatedData.completedAt
+          ? new Date(validatedData.completedAt)
+          : null,
       },
     });
 
@@ -85,13 +102,16 @@ export async function POST(req: NextRequest) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.issues }, { status: 400 });
     }
-    if (error.code === 'P2002' && error.meta?.target?.includes('code')) {
-      return NextResponse.json({ error: "Referral code already exists" }, { status: 409 });
+    if (error.code === "P2002" && error.meta?.target?.includes("code")) {
+      return NextResponse.json(
+        { error: "Referral code already exists" },
+        { status: 409 }
+      );
     }
     console.error("Admin referrals POST error:", error);
     return NextResponse.json(
       { error: "Failed to create referral" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

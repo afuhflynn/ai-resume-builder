@@ -167,3 +167,11 @@ interface ProjectItem {
   url: string;
   technologies: string[];
 }
+
+interface ResumesMetadata {
+  data: Resume[];
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}

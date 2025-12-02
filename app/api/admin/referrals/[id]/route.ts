@@ -32,11 +32,11 @@ export async function PUT(
       headers: await headers(),
     });
 
-    if (!isAdmin(session)) {
+    if (!isAdmin(session?.session)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = await req.json();
     const validatedData = updateReferralSchema.parse(body);
 
@@ -107,11 +107,11 @@ export async function DELETE(
       headers: await headers(),
     });
 
-    if (!isAdmin(session)) {
+    if (!isAdmin(session?.session)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     await prisma.referral.delete({
       where: { id },

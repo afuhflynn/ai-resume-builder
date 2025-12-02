@@ -23,6 +23,11 @@ import {
 import { CreditDisplay } from "@/components/dashboard/CreditDisplay";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
+import { DashboardResumesLoading } from "@/components/loading/dashboard-resumes-loading";
+import { useResumes } from "@/hooks";
+import { useSession } from "@/lib/auth-client";
+import { useQueryStates } from "nuqs";
+import { searchParamsSchema } from "@/nuqs";
 
 interface Resume {
   id: string;
@@ -32,27 +37,14 @@ interface Resume {
 }
 
 export default function DashboardPage() {
-  const { user } = useBetterAuth();
-  const [resumes, setResumes] = useState<Resume[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: session } = useSession();
+  const [params, setParams] = useQueryStates(searchParamsSchema);
 
-  useEffect(() => {
-    const fetchResumes = async () => {
-      try {
-        const response = await fetch("/api/resumes");
-        if (!response.ok) throw new Error("Failed to fetch resumes");
-        const data = await response.json();
-        setResumes(data);
-      } catch (error) {
-        console.error(error);
-        toast.error("Failed to load resumes");
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const page = Number(params.page);
+  const limit = 3;
 
-    fetchResumes();
-  }, []);
+  const { data, isPending: isLoading } = useResumes(page, limit);
+  const resumes = data?.data;
 
   return (
     <div className="space-y-8 p-4 lg:p-8">
@@ -60,7 +52,7 @@ export default function DashboardPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
           <p className="text-muted-foreground">
-            Welcome back, {user?.name || "User"}. Here's what's happening with
+            Welcome back, {session?.user.name}. Here's what's happening with
             your resumes.
           </p>
         </div>
@@ -80,7 +72,7 @@ export default function DashboardPage() {
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{resumes.length}</div>
+            <div className="text-2xl font-bold">{data?.total}</div>
             <p className="text-xs text-muted-foreground">
               {isLoading ? "Loading..." : "Saved resumes"}
             </p>
@@ -114,12 +106,10 @@ export default function DashboardPage() {
         </div>
 
         {isLoading ? (
-          <div className="flex justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          </div>
-        ) : resumes.length > 0 ? (
+          <DashboardResumesLoading />
+        ) : data && data.data && data.data.length > 0 ? (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {resumes.slice(0, 3).map((resume) => (
+            {data.data.map((resume) => (
               <Link key={resume.id} href={`/editor/${resume.id}`}>
                 <Card className="hover:shadow-md transition-shadow cursor-pointer h-full flex flex-col">
                   <CardHeader>

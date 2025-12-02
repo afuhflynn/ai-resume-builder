@@ -10,11 +10,12 @@ const posthogClient = new PostHog(process.env.POSTHOG_API_KEY as string, {
 });
 
 export async function POST(req: NextRequest) {
-  let requestBody;
+  const requestBody = await req.json();
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const { plan, ip } = requestBody;
 
     if (!session) {
       // Capture unauthorized checkout attempt
@@ -22,14 +23,11 @@ export async function POST(req: NextRequest) {
         distinctId: "anonymous",
         event: "checkout_initiated_unauthorized",
         properties: {
-          ip: req.ip, // Attempt to get IP if available in req.ip
+          ip, // Attempt to get IP if available in req.ip
         },
       });
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    requestBody = await req.json();
-    const { plan } = requestBody;
 
     if (!plan || !BILLING_PLANS[plan as keyof typeof BILLING_PLANS]) {
       // Capture invalid plan attempt
@@ -45,7 +43,7 @@ export async function POST(req: NextRequest) {
 
     const checkoutSession = await createCheckoutSession(
       session.user.id,
-      plan as keyof typeof BILLING_PLANS,
+      plan as keyof typeof BILLING_PLANS
     );
 
     if (!checkoutSession.url) {
@@ -59,7 +57,7 @@ export async function POST(req: NextRequest) {
       });
       return NextResponse.json(
         { error: "Failed to create checkout session" },
-        { status: 500 },
+        { status: 500 }
       );
     }
 
@@ -103,7 +101,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

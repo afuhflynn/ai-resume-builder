@@ -11,23 +11,21 @@ const posthogClient = new PostHog(process.env.POSTHOG_API_KEY as string, {
 });
 
 export async function POST(req: NextRequest) {
-  let requestBody;
+  const requestBody = await req.json();
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    requestBody = await req.json();
     const { resumeText } = requestBody;
 
     if (!resumeText) {
       return NextResponse.json(
         { error: "Missing resume text" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -35,7 +33,7 @@ export async function POST(req: NextRequest) {
     const creditResult = await deductCredits(
       session.user.id,
       "ATS_OPTIMIZATION",
-      { textLength: resumeText.length },
+      { textLength: resumeText.length }
     );
 
     if (!creditResult.success) {
@@ -46,13 +44,13 @@ export async function POST(req: NextRequest) {
         properties: {
           reason: "insufficient_credits",
           creditsNeeded: 25, // Assuming 25 credits per optimization based on tasks.md
-          creditsRemaining: creditResult.remaining,
+          creditsRemaining: creditResult.remainingCredits,
           resumeTextLength: resumeText.length,
         },
       });
       return NextResponse.json(
-        { error: creditResult.error, remaining: creditResult.remaining },
-        { status: 402 }, // Payment Required
+        { error: creditResult.error, remaining: creditResult.remainingCredits },
+        { status: 402 } // Payment Required
       );
     }
 
@@ -65,14 +63,14 @@ export async function POST(req: NextRequest) {
       properties: {
         resumeTextLength: resumeText.length,
         creditsUsed: 25, // Assuming 25 credits per optimization based on tasks.md
-        creditsRemaining: creditResult.remaining,
+        creditsRemaining: creditResult.remainingCredits,
         score: analysis?.score, // Assuming analysis object has a score property
       },
     });
 
     return NextResponse.json({
       analysis,
-      creditsRemaining: creditResult.remaining,
+      creditsRemaining: creditResult.remainingCredits,
     });
   } catch (error) {
     console.error("ATS optimization error:", error);
@@ -101,7 +99,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

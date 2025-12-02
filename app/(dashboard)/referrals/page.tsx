@@ -56,12 +56,7 @@ export default function ReferralsPage() {
   const handleCopy = () => {
     if (!referralLink) return;
     navigator.clipboard.writeText(referralLink);
-    toast({
-      title: "Copied!",
-      description: "Your referral link has been copied to the clipboard.",
-    });
-
-    toast.success("Success", {
+    toast.success("Copied!", {
       description: "Your referral link has been copied to the clipboard.",
     });
   };

@@ -24,16 +24,16 @@ export async function POST(req: NextRequest) {
     }
 
     // Deduct credits
-    // const creditResult = await deductCredits(session.user.id, "COVER_LETTER", {
-    //   jobDescription: jobDescription.substring(0, 100),
-    // });
+    const creditResult = await deductCredits(session.user.id, "COVER_LETTER", {
+      jobDescription: jobDescription.substring(0, 100),
+    });
 
-    // if (!creditResult.success) {
-    //   return NextResponse.json(
-    //     { error: creditResult.error, remaining: creditResult.remaining },
-    //     { status: 402 } // Payment Required
-    //   );
-    // }
+    if (!creditResult.success) {
+      return NextResponse.json(
+        { error: creditResult.error, remaining: creditResult.remainingCredits },
+        { status: 402 } // Payment Required
+      );
+    }
 
     // Convert resumeData object to string for the prompt
     const resumeString = JSON.stringify(resumeData, null, 2);
@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       coverLetter,
-      // creditsRemaining: creditResult.remaining,
+      // creditsRemaining: creditResult.remainingCredits,
     });
   } catch (error) {
     console.error("Cover letter generation error:", error);

@@ -22,7 +22,7 @@ export async function POST(
     // Verify the resume belongs to the user
     const resume = await prisma.resume.findUnique({
       where: { id: resumeId },
-      select: { userId: true, content: true },
+      select: { userId: true, projects: true, skills: true },
     });
 
     if (!resume || resume.userId !== session.user.id) {
@@ -31,7 +31,7 @@ export async function POST(
 
     // Get the data from request body or use current resume content
     const body = await request.json();
-    const data = body.data || JSON.parse(resume.content || "{}");
+    const data = body.data || JSON.parse(JSON.stringify(resume) || "{}");
 
     // Create new version
     const version = await createVersion(resumeId, data);

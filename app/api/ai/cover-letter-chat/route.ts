@@ -34,7 +34,10 @@ export async function POST(req: NextRequest) {
 
       if (!creditResult.success) {
         return NextResponse.json(
-          { error: creditResult.error, remaining: creditResult.remaining },
+          {
+            error: creditResult.error,
+            remaining: creditResult.remainingCredits,
+          },
           { status: 402 }
         );
       }
@@ -86,8 +89,8 @@ When generating the initial cover letter, structure it with:
 
 For follow-up messages, help refine and improve based on user feedback.`;
 
-    const result = await streamText({
-      model: google("gemini-1.5-pro"),
+    const result = streamText({
+      model: google("gemini-2.5-flash-lite"),
       system: systemPrompt,
       messages: messages,
     });

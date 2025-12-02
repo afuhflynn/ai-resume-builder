@@ -7,6 +7,7 @@
  */
 
 import { privateAxios } from "@/config/axios.config";
+import { Resume, User } from "@prisma/client";
 
 // Helper function for making authenticated requests
 async function apiRequest<T>(
@@ -34,10 +35,7 @@ async function apiRequest<T>(
 
     case "DELETE":
       try {
-        const response = await privateAxios.delete<any | null>(
-          endpoint,
-          options.body ?? {}
-        );
+        const response = await privateAxios.delete<any | null>(endpoint);
 
         const data = response?.data;
         return data;
@@ -99,54 +97,33 @@ async function apiRequest<T>(
 // API Methods
 export const api = {
   resume: {
-    updateExperience: (data: any) =>
-      apiRequest("/resume/experience", {
-        method: "PUT",
-        body: data,
+    getAll: ({
+      page,
+      limit,
+    }: {
+      page: number;
+      limit: number;
+    }): Promise<ResumesMetadata | null> =>
+      apiRequest(`/resumes?page=${page}&limit=${limit}`, {
+        method: "GET",
       }),
-    removeExperience: (data: any) =>
-      apiRequest("/resume/experience", {
+    delete: ({ id }: { id: string }): Promise<{ success: boolean } | null> =>
+      apiRequest(`/resumes/${id}`, {
         method: "DELETE",
+      }),
+    create: (data: any): Promise<Resume | null> =>
+      apiRequest("/resumes", {
+        method: "POST",
         body: data,
       }),
-    updateEducation: (data: any) =>
-      apiRequest("/resume/education", {
-        method: "PUT",
+    importCreate: (data: any): Promise<Resume | null> =>
+      apiRequest("/resumes/import", {
+        method: "POST",
         body: data,
       }),
-    removeEducation: (data: any) =>
-      apiRequest("/resume/education", {
-        method: "DELETE",
-        body: data,
-      }),
-    updateSkill: (data: any) =>
-      apiRequest("/resume/skill", {
-        method: "PUT",
-        body: data,
-      }),
-    removeSkill: (data: any) =>
-      apiRequest("/resume/skill", {
-        method: "DELETE",
-        body: data,
-      }),
-    updateProject: (data: any) =>
-      apiRequest("/resume/project", {
-        method: "PUT",
-        body: data,
-      }),
-    removeProject: (data: any) =>
-      apiRequest("/resume/project", {
-        method: "DELETE",
-        body: data,
-      }),
-    updateSummary: (data: any) =>
-      apiRequest("/resume/summary", {
-        method: "PUT",
-        body: data,
-      }),
-    updatePersonalInfo: (data: any) =>
-      apiRequest("/resume/personal-info", {
-        method: "PUT",
+    generate: (data: any): Promise<Resume | null> =>
+      apiRequest("/ai/generate", {
+        method: "POST",
         body: data,
       }),
   },
@@ -178,7 +155,7 @@ export const api = {
         method: "PUT",
         body: data,
       }),
-    get: (id: string) =>
+    get: (id: string): Promise<User | null> =>
       apiRequest("/user", {
         method: "GET",
       }),
@@ -189,20 +166,6 @@ export const api = {
       }),
   },
   auth: {
-    register: (data: any) =>
-      apiRequest("/auth/register", {
-        method: "POST",
-        body: data,
-      }),
-    login: (data: any) =>
-      apiRequest("/auth/login", {
-        method: "POST",
-        body: data,
-      }),
-    logout: () =>
-      apiRequest("/auth/logout", {
-        method: "POST",
-      }),
     forgotPassword: (data: any) =>
       apiRequest("/auth/forgot-password", {
         method: "POST",
